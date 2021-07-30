@@ -1,60 +1,110 @@
 #ifndef MANUAL_CONTRACT__HPP
 #define MANUAL_CONTRACT__HPP
 #include "condition.hpp"
+#include "utilities.hpp"
 
 #include <boost/hana.hpp>
 #include <experimental/source_location>
+#include <functional>
 #include <iostream>
+#include <tuple>
+#include <type_traits>
 
 
+/**
+ * @brief A contract class with manual error control.
+ *
+ * @tparam Error_t the error type
+ * @tparam ErrorGenerator_t a function that can generate an Error_t given:
+ * 1. source_location
+ * 2. error description provided by the corresponding condition object
+ * 3. error code provided by the corresponding condition object
+ * @tparam conditions
+ */
+template <typename ErrorGenerator_t, condition_t... conditions>
+struct ManualContract {
 
-template<typename Error_t, typename ErrorHandler,typename... conditions>
-struct ManualContract{
-    ManualContract(ErrorHandler _f, conditions... _conditions);
+  using Error_t = std::result_of_t<ErrorGenerator_t(
+      std::experimental::source_location, std::string_view, int)>;
 
-    bool calculateError(cond_type_t to_check, std::experimental::source_location loc);
+  ManualContract(ErrorGenerator_t _f, conditions... _conditions);
 
-    bool check(cond_type_t check, std::experimental::source_location loc = std::experimental::source_location::current());
+  /**
+   * @brief check for errors.
+   *
+   * @param check the type of condition to check.
+   * @param loc the source_location of the error.
+   * @return true there is no error.
+   * @return false there is an error.
+   */
+  bool check(cond_type_t check,
+             std::experimental::source_location loc =
+                 std::experimental::source_location::current());
 
-    Error_t error;
-    ErrorHandler f;
+  Error_t m_error;
 
-    boost::hana::tuple<conditions...> const m_conditions;
+private:
+  /**
+   * @brief check for an error and sets the m_error member if there is an error.
+   *
+   * @param to_check the type of condition to check.
+   * @param loc the source_location of the error.
+   * @return true there is no error.
+   * @return false there is an error.
+   */
+  bool calculateError(cond_type_t to_check,
+                      std::experimental::source_location loc);
+
+  ErrorGenerator_t m_predicate;
+  boost::hana::tuple<conditions...> const m_conditions;
 };
 
 /*****************IMPLEMENTATION*****************/
 
-template<typename Error_t, typename ErrorHandler,typename... conditions>
-ManualContract<Error_t, ErrorHandler, conditions...>::ManualContract(ErrorHandler _f, conditions... _conditions)
-    :m_conditions(_conditions...), f(_f) {
+/**
+ * @brief Construct a new ManualContract object
+ *
+ * @param _f the function object.
+ * @param _conditions the list of conditions for this contract.
+ */
+template <typename ErrorGenerator_t, condition_t... conditions>
+ManualContract<ErrorGenerator_t, conditions...>::ManualContract(
+    ErrorGenerator_t _f, conditions... _conditions)
+    : m_conditions(_conditions...), m_predicate(_f) {
+        // static_assert(is_same_template_v<conditions, condition> && ... );
+    }
+
+template <typename ErrorGenerator_t, condition_t... conditions>
+bool ManualContract<ErrorGenerator_t, conditions...>::check(
+    cond_type_t check, std::experimental::source_location loc) {
+  return calculateError(check, std::move(loc));
 }
 
-template<typename Error_t, typename ErrorHandler,typename... conditions>
-bool ManualContract<Error_t, ErrorHandler, conditions...>::check(cond_type_t check, std::experimental::source_location loc){
-    return calculateError(check, std::move(loc));
+template <typename ErrorGenerator_t, condition_t... conditions>
+bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
+    cond_type_t to_check, std::experimental::source_location loc) {
+  bool erred_yet{false};
+  std::string_view description;
+  int EC{0};
+
+  // go over the conditions and find conditions that the concerning predicate
+  // erred.
+  boost::hana::for_each(m_conditions, [to_check, &erred_yet, &description,
+                                       &EC](auto const &condition) {
+    if (auto _ec = condition.pred();
+        !erred_yet && (condition.m_type & to_check) && _ec) {
+      erred_yet = true;
+
+      description = condition.description;
+      EC = _ec;
+    }
+  });
+
+  if (!erred_yet)
+    return true;
+
+  m_error = m_predicate(loc, description, EC);
+  return false;
 }
 
-template<typename Error_t, typename ErrorHandler,typename... conditions>
-bool ManualContract<Error_t, ErrorHandler, conditions...>::calculateError(cond_type_t to_check, std::experimental::source_location loc){
-    bool erred_yet{false};
-    std::string_view description;
-    int EC{0};
-
-    boost::hana::for_each(m_conditions, [to_check, &erred_yet, &description, &EC](auto &condition){
-        if(auto _ec = condition.pred();
-            !erred_yet &&
-            (condition.m_type & to_check) &&
-            _ec){
-            erred_yet = true;
-            description = condition.description;
-            EC = _ec;
-        }
-    });
-
-    if(description.empty())
-        return true;
-    error = f(loc, description, EC);
-    return false;
-}
-
-#endif //MANUAL_CONTRACT__HPP
+#endif // MANUAL_CONTRACT__HPP
