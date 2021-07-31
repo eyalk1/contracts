@@ -3,23 +3,18 @@
 
 #include "CommonCondition.hpp"
 
-#include <optional>
 #include <string_view>
 #include <utility>
 
+namespace Contract::Manual {
 
-using cond_type_t = std::underlying_type_t<cond_type>;
-
-template<typename F>
-struct ManualCondData
-{
-    constexpr ManualCondData(F _f, std::string_view _description, int _error_code):
-        pred(_f), description(_description), error_code(_error_code){}
-    F const pred;
-    std::string_view const description;
-    int error_code;
+template <typename F> struct ManualCondData {
+  constexpr ManualCondData(F _f, std::string_view _description, int _error_code)
+      : pred(_f), description(_description), error_code(_error_code) {}
+  F const pred;
+  std::string_view const description;
+  int error_code;
 };
-
 
 /**
  * @brief the condition class.
@@ -51,17 +46,16 @@ template <typename F> struct ManualCondition {
    * @return condition<new_f> return the new constructed predicate
    */
   template <typename new_f>
-  ManualCondition<new_f>
-  operator=(ManualCondData<new_f> _pred) const;
+  ManualCondition<new_f> operator=(ManualCondData<new_f> _pred) const;
 
   template <typename new_f>
   ManualCondition<new_f> operator=(ManualCondition<new_f> rhs) const;
 
   cond_type m_type;
   ManualCondData<F> const cond;
-//   F const pred;
-//   std::string_view const description;
-//   int error_code;
+  //   F const pred;
+  //   std::string_view const description;
+  //   int error_code;
 };
 
 template <typename> struct is_m_condition {
@@ -80,16 +74,17 @@ template <typename F>
 constexpr ManualCondition<F>::ManualCondition(cond_type _type, F _pred,
                                               std::string_view _description,
                                               int _error_code)
-    : m_type(_type), cond(_pred, _description,_error_code){};
+    : m_type(_type), cond(_pred, _description, _error_code){};
 
 template <typename F>
-constexpr ManualCondition<F>::ManualCondition(cond_type _type, ManualCondData<F> _data):
-    cond(_data), m_type(_type){}
+constexpr ManualCondition<F>::ManualCondition(cond_type _type,
+                                              ManualCondData<F> _data)
+    : cond(_data), m_type(_type) {}
 
 template <typename F>
 template <typename new_f>
-ManualCondition<new_f> ManualCondition<F>::operator=(
-    ManualCondData<new_f> _pred) const {
+ManualCondition<new_f>
+ManualCondition<F>::operator=(ManualCondData<new_f> _pred) const {
   return ManualCondition<new_f>(this->m_type, _pred);
 }
 
@@ -107,10 +102,13 @@ ManualCondition<F>::operator=(ManualCondition<new_f> rhs) const {
  * static objects that give you the ability to write python-;like parameter
  * passing
  */
-static constexpr ManualCondition pre_m(
-    precondition, [](){}, "", 0);
-static constexpr ManualCondition invar_m(
+static constexpr ManualCondition pre(
+    precondition, []() {}, "", 0);
+static constexpr ManualCondition invar(
     invariant, [] {}, "", 0);
-static constexpr ManualCondition post_m(
+static constexpr ManualCondition post(
     postcondition, [] {}, "", 0);
+
+} // namespace Contract::Manual
+
 #endif // MANUAL_CONDITION__HPP

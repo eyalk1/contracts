@@ -3,16 +3,13 @@
 
 #include "CommonCondition.hpp"
 
-#include <optional>
 #include <string_view>
 #include <utility>
 
-using cond_type_t = std::underlying_type_t<cond_type>;
+namespace Contract::Throwing {
 
-// TODO: clean
 template <typename F> struct ThrowingCondData {
-  constexpr ThrowingCondData(F _pred, std::string_view _description)
-      : pred(_pred), description(_description) {}
+  constexpr ThrowingCondData(F _pred, std::string_view _description);
   F const pred;
   std::string_view const description;
 };
@@ -53,10 +50,7 @@ template <typename F, typename Exc> struct ThrowingCondition {
   ThrowingCondition<new_f, new_Exc>
   operator=(ThrowingCondition<new_f, new_Exc> rhs) const;
 
-  // TODO: clean
-  Exc getException(std::string const &description) const {
-    return Exc(description);
-  };
+  Exc getException(std::string const &description) const;
 
   cond_type m_type;
   ThrowingCondData<F> cond;
@@ -100,18 +94,35 @@ ThrowingCondition<new_f, new_Exc> ThrowingCondition<F, Exc>::operator=(
   return std::move(rhs);
 }
 
+template <typename F>
+constexpr ThrowingCondData<F>::ThrowingCondData(F _pred,
+                                                std::string_view _description)
+    : pred(_pred), description(_description) {}
+
+template <typename F, typename Exc>
+Exc ThrowingCondition<F, Exc>::getException(
+    std::string const &description) const {
+  return Exc(description);
+};
+
 /*****************UTILITIES*****************/
 
-// TODO: clean
 /**
- * static objects that give you the ability to write python-;like parameter
+ * static objects that give you the ability to write python-like parameter
  * passing
  */
 template <typename F, typename Exc>
-static constexpr ThrowingCondition<F, Exc> pre_t(
+static constexpr ThrowingCondition<F, Exc> pre(
     precondition, [] {}, "");
-// static constexpr ThrowingCondition<void> invar_t(
-//     invariant, [] {}, "");
-// static constexpr ThrowingCondition<void> post_t(
-//     postcondition, [] {}, "");
+
+template <typename F, typename Exc>
+static constexpr ThrowingCondition<F, Exc> invar(
+    invariant, [] {}, "");
+
+template <typename F, typename Exc>
+static constexpr ThrowingCondition<F, Exc> post(
+    postcondition, [] {}, "");
+
+} // namespace Contract::Throwing
+
 #endif // THROWING_CONDITION__HPP

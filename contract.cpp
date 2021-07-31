@@ -9,11 +9,13 @@
 #include <sstream>
 #include <string_view>
 
+using namespace Contract::Throwing;
+using namespace Contract;
 
 // TODO: add tests
 // TODO: add README.md
 // TODO: add ns
-// TODO: clean todo's
+
 using myError_t = std::pair<int, std::string>;
 
 auto runtime_builder = [](std::experimental::source_location context,

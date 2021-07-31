@@ -6,10 +6,11 @@
 #include <boost/hana.hpp>
 #include <experimental/source_location>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 
-#define TCONTRACT(...)                                                      \
+namespace Contract::Throwing {
+
+#define TCONTRACT(...)                                                         \
   ThrowingContract(std::experimental::source_location::current(), __VA_ARGS__)
 
 /**
@@ -86,5 +87,7 @@ std::string GenerateException(std::experimental::source_location loc,
      << " .the error is: " << description;
   return ss.str();
 }
+
+} // namespace Contract::Throwing
 
 #endif // THROWING_CONTRACT__HPP

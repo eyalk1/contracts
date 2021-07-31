@@ -1,14 +1,12 @@
 #ifndef MANUAL_CONTRACT__HPP
 #define MANUAL_CONTRACT__HPP
 #include "ManualCondition.hpp"
-#include "utilities.hpp"
 
 #include <boost/hana.hpp>
 #include <experimental/source_location>
-#include <functional>
-#include <iostream>
-#include <tuple>
 #include <type_traits>
+
+namespace Contract::Manual {
 
 /**
  * @brief A contract class with manual error control.
@@ -90,7 +88,8 @@ bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
   // erred.
   boost::hana::for_each(m_conditions, [to_check, &erred_yet, &description,
                                        &EC](auto const &condition) {
-    if (!erred_yet && (condition.m_type & to_check) && (!condition.cond.pred())) {
+    if (!erred_yet && (condition.m_type & to_check) &&
+        (!condition.cond.pred())) {
       erred_yet = true;
 
       description = condition.cond.description;
@@ -104,5 +103,7 @@ bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
   m_error = m_predicate(loc, description, EC);
   return false;
 }
+
+} // namespace Contract::Manual
 
 #endif // MANUAL_CONTRACT__HPP
