@@ -65,8 +65,8 @@ private:
  * @param _conditions the list of conditions for this contract.
  */
 template <typename ErrorGenerator_t, m_condition... conditions>
-Contract<ErrorGenerator_t, conditions...>::Contract(
-    ErrorGenerator_t _f, conditions... _conditions)
+Contract<ErrorGenerator_t, conditions...>::Contract(ErrorGenerator_t _f,
+                                                    conditions... _conditions)
     : m_conditions(_conditions...), m_predicate(_f) {
   // static_assert(is_same_template_v<conditions, condition> && ... );
 }
@@ -104,6 +104,6 @@ bool Contract<ErrorGenerator_t, conditions...>::calculateError(
   return false;
 }
 
-} // namespace Contract::Manual
+} // namespace Contract_ns::Manual
 
 #endif // MANUAL_CONTRACT__HPP

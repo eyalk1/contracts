@@ -33,8 +33,8 @@ template <typename F> struct Condition {
    * @param _pred the predicate to check
    * @param _description the error to inform
    */
-  constexpr Condition(cond_type _type, F _pred,
-                            std::string_view _description, int _error_code);
+  constexpr Condition(cond_type _type, F _pred, std::string_view _description,
+                      int _error_code);
 
   constexpr Condition(cond_type _type, Condata<F> _data);
 
@@ -72,26 +72,23 @@ concept m_condition = is_m_condition<T>::value;
 
 template <typename F>
 constexpr Condition<F>::Condition(cond_type _type, F _pred,
-                                              std::string_view _description,
-                                              int _error_code)
+                                  std::string_view _description,
+                                  int _error_code)
     : m_type(_type), cond(_pred, _description, _error_code){};
 
 template <typename F>
-constexpr Condition<F>::Condition(cond_type _type,
-                                              Condata<F> _data)
+constexpr Condition<F>::Condition(cond_type _type, Condata<F> _data)
     : cond(_data), m_type(_type) {}
 
 template <typename F>
 template <typename new_f>
-Condition<new_f>
-Condition<F>::operator=(Condata<new_f> _pred) const {
+Condition<new_f> Condition<F>::operator=(Condata<new_f> _pred) const {
   return Condition<new_f>(this->m_type, _pred);
 }
 
 template <typename F>
 template <typename new_f>
-Condition<new_f>
-Condition<F>::operator=(Condition<new_f> rhs) const {
+Condition<new_f> Condition<F>::operator=(Condition<new_f> rhs) const {
   rhs.m_type = this->m_type;
   return std::move(rhs);
 }

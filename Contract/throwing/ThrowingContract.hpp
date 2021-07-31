@@ -32,7 +32,7 @@ template <t_condition... conditions> struct Contract {
    * @param _conditions condition list
    */
   Contract(std::experimental::source_location _location,
-                   conditions... _conditions);
+           conditions... _conditions);
   /**
    * @brief Destroy the Throwing Contract object. go over the post and invariant
    * conditions.
@@ -56,14 +56,13 @@ private:
 /*****************IMPLEMENTATION*****************/
 
 template <t_condition... conditions>
-Contract<conditions...>::Contract(
-    std::experimental::source_location _location, conditions... _conditions)
+Contract<conditions...>::Contract(std::experimental::source_location _location,
+                                  conditions... _conditions)
     : m_conditions(_conditions...), location(_location) {
   go_over(precondition | invariant);
 }
 
-template <t_condition... conditions>
-Contract<conditions...>::~Contract() {
+template <t_condition... conditions> Contract<conditions...>::~Contract() {
   go_over(postcondition | invariant);
 }
 
