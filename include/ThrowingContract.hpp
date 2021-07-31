@@ -74,9 +74,9 @@ void ThrowingContract<conditions...>::go_over(cond_type_t filt) {
     //           << condition.m_type << " condition.cond.description "
     //           << condition.cond.description << " condition.cond.pred() "
     //           << condition.cond.pred() << '\n';
-    if ((condition.cond.m_type & filt) && !(condition.cond.pred()))
-      throw condition.cond.getException(
-          GenerateException(this->location, condition.cond.description));
+    if ((condition.m_cond.m_type & filt) && !(condition.m_cond.pred()))
+      throw condition.m_cond.getException(
+          GenerateException(this->location, condition.m_cond.description));
   });
 }
 

@@ -10,11 +10,11 @@
 
 namespace Contract::Throwing {
 
-template <typename F, typename Exc> struct ThrowingCondition;
+template <typename F, typename Exc> struct Condition;
 
-template <typename F, typename Exc = void> struct ThrowingCondData {
-  constexpr ThrowingCondData(F _pred, std::string_view _description,
-                             cond_type _type);
+template <typename F, typename Exc = void> struct Condata {
+  constexpr Condata(F _pred, std::string_view _description,
+                             cond_type _type = precondition);
   Exc getException(std::string const &description) const;
   F const pred;
   std::string_view const description;
@@ -28,8 +28,8 @@ template <typename F, typename Exc = void> struct ThrowingCondData {
    * @return condition<new_f> return the new constructed predicate
    */
   template <typename new_f, typename new_Exc>
-  ThrowingCondition<new_f, Exc>
-  operator=(ThrowingCondData<new_f, new_Exc> cond) const;
+  Condition<new_f, Exc>
+  operator=(Condata<new_f, new_Exc> cond) const;
 };
 
 /**
@@ -41,7 +41,7 @@ template <typename F, typename Exc = void> struct ThrowingCondData {
  *
  * @tparam F the predicate.
  */
-template <typename F, typename Exc> struct ThrowingCondition {
+template <typename F, typename Exc> struct Condition {
   /**
    * @brief Construct a new condition object.
    *
@@ -49,22 +49,22 @@ template <typename F, typename Exc> struct ThrowingCondition {
    * @param _pred the predicate to check
    * @param _description the error to inform
    */
-  constexpr ThrowingCondition(cond_type _type, F _pred,
+  constexpr Condition(cond_type _type, F _pred,
                               std::string_view _description);
-  constexpr ThrowingCondition(ThrowingCondData<F, Exc> _cond);
+  constexpr Condition(Condata<F, Exc> _cond);
 
   template <typename new_f, typename new_Exc>
-  ThrowingCondition<new_f, new_Exc>
-  operator=(ThrowingCondition<new_f, new_Exc> rhs) const;
+  Condition<new_f, new_Exc>
+  operator=(Condition<new_f, new_Exc> rhs) const;
 
-  ThrowingCondData<F, Exc> cond;
+  Condata<F, Exc> m_cond;
 };
 
 template <typename> struct is_condition {
   static constexpr auto value = false;
 };
 template <typename T, typename Exc>
-struct is_condition<ThrowingCondition<T, Exc>> {
+struct is_condition<Condition<T, Exc>> {
   static constexpr auto value = true;
 };
 
@@ -74,37 +74,37 @@ concept t_condition = is_condition<T>::value;
 /*****************IMPLEMENTATION*****************/
 
 template <typename F, typename Exc>
-constexpr ThrowingCondition<F, Exc>::ThrowingCondition(
+constexpr Condition<F, Exc>::Condition(
     cond_type _type, F _pred, std::string_view _description)
-    : cond(_pred, _description, _type){};
+    : m_cond(_pred, _description, _type){};
 
 template <typename F, typename Exc>
-constexpr ThrowingCondition<F, Exc>::ThrowingCondition(
-    ThrowingCondData<F, Exc> _cond)
-    : cond(_cond){};
+constexpr Condition<F, Exc>::Condition(
+    Condata<F, Exc> _cond)
+    : m_cond(_cond){};
 
 template <typename F, typename Exc>
 template <typename new_f, typename new_Exc>
-ThrowingCondition<new_f, Exc> ThrowingCondData<F, Exc>::operator=(
-    ThrowingCondData<new_f, new_Exc> cond) const {
-  return ThrowingCondition<new_f, Exc>(cond.m_type, cond.pred, cond.description);
+Condition<new_f, Exc> Condata<F, Exc>::operator=(
+    Condata<new_f, new_Exc> cond) const {
+  return Condition<new_f, Exc>(cond.m_type, cond.pred, cond.description);
 }
 
 template <typename F, typename Exc>
 template <typename new_f, typename new_Exc>
-ThrowingCondition<new_f, new_Exc> ThrowingCondition<F, Exc>::operator=(
-    ThrowingCondition<new_f, new_Exc> rhs) const {
+Condition<new_f, new_Exc> Condition<F, Exc>::operator=(
+    Condition<new_f, new_Exc> rhs) const {
   rhs.m_type = this->m_type;
   return std::move(rhs);
 }
 
 template <typename F, typename Exc>
-constexpr ThrowingCondData<F, Exc>::ThrowingCondData(
+constexpr Condata<F, Exc>::Condata(
     F _pred, std::string_view _description, cond_type _type)
     : pred(_pred), description(_description), m_type(_type) {}
 
 template <typename F, typename Exc>
-Exc ThrowingCondData<F, Exc>::getException(
+Exc Condata<F, Exc>::getException(
     std::string const &description) const {
   return Exc(description);
 };
@@ -118,13 +118,13 @@ Exc ThrowingCondData<F, Exc>::getException(
 auto empty = [] {};
 
 template <typename Error>
-static constexpr ThrowingCondData<decltype(empty), Error> pre(empty, "", precondition);
+static constexpr Condata<decltype(empty), Error> pre(empty, "", precondition);
 
 template <typename Error>
-static constexpr ThrowingCondData<decltype(empty), Error> invar(empty, "", invariant);
+static constexpr Condata<decltype(empty), Error> invar(empty, "", invariant);
 
 template <typename Error>
-static constexpr ThrowingCondData<decltype(empty), Error> post(empty, "", postcondition);
+static constexpr Condata<decltype(empty), Error> post(empty, "", postcondition);
 
 } // namespace Contract::Throwing
 

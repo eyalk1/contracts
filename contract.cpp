@@ -24,22 +24,22 @@ auto runtime_builder = [](std::experimental::source_location context,
   return {EC, ss.str()};
 };
 
-template <typename F> using logicCond = ThrowingCondData<std::logic_error, F>;
-
 int main() {
   auto value_to_return = 0;
   // ManualCondition bublul(
   //     precondition, [] { return false; }, "invariant is shit", 76);
   auto k = [] { return false; };
 
-  ThrowingCondition<decltype(k), std::runtime_error> bublul(precondition, k,
-                                                            "pre is shit");
+  Condition<decltype(k), std::runtime_error> bublul(precondition, k,
+                                                    "pre is shit");
 
-  ThrowingCondition<decltype(k), std::logic_error> bublul2(invariant, k,
-                                                           "invariant is shit");
+  Condition<decltype(k), std::logic_error> bublul2(invariant, k,
+                                                   "invariant is shit");
 
   auto T = TCONTRACT(pre<std::logic_error> =
-                         ThrowingCondData([] { return false; }, "poopy poop", precondition));
+                         Condata([] { return true; }, "poopy poop"),
+                     invar<std::runtime_error> =
+                         Condata([] { return false; }, "invariant is shit"));
 
   // auto c = ManualContract(runtime_builder,
   //                     // post=std::pair{[]{return 9;}, "post is shit"},
