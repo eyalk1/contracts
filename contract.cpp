@@ -2,18 +2,24 @@
 #include "include/ManualContract.hpp"
 #include "include/ThrowingCondition.hpp"
 #include "include/ThrowingContract.hpp"
+#include "include/CommonCondition.hpp"
 
 #include <experimental/source_location>
 #include <iostream>
 #include <sstream>
 #include <string_view>
 
-using namespace Contract::Throwing;
-using namespace Contract;
+using Contract_ns::Throwing::Contract;
+using Contract_ns::Throwing::Condata;
+using Contract_ns::precondition;
+using Contract_ns::invariant;
+using Contract_ns::postcondition;
+using Contract_ns::Throwing::pre;
+using Contract_ns::Throwing::invar;
+using Contract_ns::Throwing::post;
 
 // TODO: add tests
 // TODO: add README.md
-// TODO: add ns
 
 using myError_t = std::pair<int, std::string>;
 
@@ -26,22 +32,15 @@ auto runtime_builder = [](std::experimental::source_location context,
 
 int main() {
   auto value_to_return = 0;
-  // ManualCondition bublul(
+  // Condition bublul(
   //     precondition, [] { return false; }, "invariant is shit", 76);
-  auto k = [] { return false; };
-
-  Condition<decltype(k), std::runtime_error> bublul(precondition, k,
-                                                    "pre is shit");
-
-  Condition<decltype(k), std::logic_error> bublul2(invariant, k,
-                                                   "invariant is shit");
 
   auto T = TCONTRACT(pre<std::logic_error> =
                          Condata([] { return true; }, "poopy poop"),
                      invar<std::runtime_error> =
                          Condata([] { return false; }, "invariant is shit"));
 
-  // auto c = ManualContract(runtime_builder,
+  // auto c = Contract(runtime_builder,
   //                     // post=std::pair{[]{return 9;}, "post is shit"},
   //                     // pre=std::pair{[]{return 0;}, "pre isn't shit"},
   //                     pre_m=bublul);

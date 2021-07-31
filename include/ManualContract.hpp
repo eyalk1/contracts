@@ -6,7 +6,7 @@
 #include <experimental/source_location>
 #include <type_traits>
 
-namespace Contract::Manual {
+namespace Contract_ns::Manual {
 
 /**
  * @brief A contract class with manual error control.
@@ -19,12 +19,12 @@ namespace Contract::Manual {
  * @tparam conditions
  */
 template <typename ErrorGenerator_t, m_condition... conditions>
-struct ManualContract {
+struct Contract {
 
   using Error_t = std::result_of_t<ErrorGenerator_t(
       std::experimental::source_location, std::string_view, int)>;
 
-  ManualContract(ErrorGenerator_t _f, conditions... _conditions);
+  Contract(ErrorGenerator_t _f, conditions... _conditions);
 
   /**
    * @brief check for errors.
@@ -59,26 +59,26 @@ private:
 /*****************IMPLEMENTATION*****************/
 
 /**
- * @brief Construct a new ManualContract object
+ * @brief Construct a new Contract object
  *
  * @param _f the function object.
  * @param _conditions the list of conditions for this contract.
  */
 template <typename ErrorGenerator_t, m_condition... conditions>
-ManualContract<ErrorGenerator_t, conditions...>::ManualContract(
+Contract<ErrorGenerator_t, conditions...>::Contract(
     ErrorGenerator_t _f, conditions... _conditions)
     : m_conditions(_conditions...), m_predicate(_f) {
   // static_assert(is_same_template_v<conditions, condition> && ... );
 }
 
 template <typename ErrorGenerator_t, m_condition... conditions>
-bool ManualContract<ErrorGenerator_t, conditions...>::check(
+bool Contract<ErrorGenerator_t, conditions...>::check(
     cond_type_t check, std::experimental::source_location loc) {
   return calculateError(check, std::move(loc));
 }
 
 template <typename ErrorGenerator_t, m_condition... conditions>
-bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
+bool Contract<ErrorGenerator_t, conditions...>::calculateError(
     cond_type_t to_check, std::experimental::source_location loc) {
   bool erred_yet{false};
   std::string_view description;

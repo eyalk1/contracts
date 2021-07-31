@@ -8,10 +8,10 @@
 #include <sstream>
 #include <string>
 
-namespace Contract::Throwing {
+namespace Contract_ns::Throwing {
 
 #define TCONTRACT(...)                                                         \
-  ThrowingContract(std::experimental::source_location::current(), __VA_ARGS__)
+  Contract(std::experimental::source_location::current(), __VA_ARGS__)
 
 /**
  * @brief the default exception generator
@@ -22,7 +22,7 @@ namespace Contract::Throwing {
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description);
 
-template <t_condition... conditions> struct ThrowingContract {
+template <t_condition... conditions> struct Contract {
   /**
    * @brief Construct a new Throwing Contract object. go over the pre and
    * invariant conditions.
@@ -31,13 +31,13 @@ template <t_condition... conditions> struct ThrowingContract {
    * @param _eg error generator
    * @param _conditions condition list
    */
-  ThrowingContract(std::experimental::source_location _location,
+  Contract(std::experimental::source_location _location,
                    conditions... _conditions);
   /**
    * @brief Destroy the Throwing Contract object. go over the post and invariant
    * conditions.
    */
-  ~ThrowingContract();
+  ~Contract();
 
 private:
   /**
@@ -56,19 +56,19 @@ private:
 /*****************IMPLEMENTATION*****************/
 
 template <t_condition... conditions>
-ThrowingContract<conditions...>::ThrowingContract(
+Contract<conditions...>::Contract(
     std::experimental::source_location _location, conditions... _conditions)
     : m_conditions(_conditions...), location(_location) {
   go_over(precondition | invariant);
 }
 
 template <t_condition... conditions>
-ThrowingContract<conditions...>::~ThrowingContract() {
+Contract<conditions...>::~Contract() {
   go_over(postcondition | invariant);
 }
 
 template <t_condition... conditions>
-void ThrowingContract<conditions...>::go_over(cond_type_t filt) {
+void Contract<conditions...>::go_over(cond_type_t filt) {
   boost::hana::for_each(m_conditions, [this, filt](auto const &condition) {
     // std::cout << "in loop filter " << filt << " condition.m_type "
     //           << condition.m_type << " condition.cond.description "
@@ -88,6 +88,6 @@ std::string GenerateException(std::experimental::source_location loc,
   return ss.str();
 }
 
-} // namespace Contract::Throwing
+} // namespace Contract_ns::Throwing
 
 #endif // THROWING_CONTRACT__HPP

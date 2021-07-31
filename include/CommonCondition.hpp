@@ -3,7 +3,7 @@
 
 #include <type_traits>
 
-namespace Contract {
+namespace Contract_ns {
 
 enum cond_type { PRE = 1, INVARIANT = 2, POST = 4 };
 
@@ -16,6 +16,6 @@ static constexpr auto precondition = cond_type::PRE;
 static constexpr auto invariant = cond_type::INVARIANT;
 static constexpr auto postcondition = cond_type::POST;
 
-} // namespace Contract
+} // namespace Contract_ns
 
 #endif // COMMON_CONDITION__HPP

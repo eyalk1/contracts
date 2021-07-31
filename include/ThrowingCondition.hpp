@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace Contract::Throwing {
+namespace Contract_ns::Throwing {
 
 template <typename F, typename Exc> struct Condition;
 
@@ -59,17 +59,6 @@ template <typename F, typename Exc> struct Condition {
 
   Condata<F, Exc> m_cond;
 };
-
-template <typename> struct is_condition {
-  static constexpr auto value = false;
-};
-template <typename T, typename Exc>
-struct is_condition<Condition<T, Exc>> {
-  static constexpr auto value = true;
-};
-
-template <typename T>
-concept t_condition = is_condition<T>::value;
 
 /*****************IMPLEMENTATION*****************/
 
@@ -125,6 +114,18 @@ static constexpr Condata<decltype(empty), Error> invar(empty, "", invariant);
 
 template <typename Error>
 static constexpr Condata<decltype(empty), Error> post(empty, "", postcondition);
+
+
+template <typename> struct is_condition {
+  static constexpr auto value = false;
+};
+template <typename T, typename Exc>
+struct is_condition<Condition<T, Exc>> {
+  static constexpr auto value = true;
+};
+
+template <typename T>
+concept t_condition = is_condition<T>::value;
 
 } // namespace Contract::Throwing
 

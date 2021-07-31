@@ -6,10 +6,10 @@
 #include <string_view>
 #include <utility>
 
-namespace Contract::Manual {
+namespace Contract_ns::Manual {
 
-template <typename F> struct ManualCondData {
-  constexpr ManualCondData(F _f, std::string_view _description, int _error_code)
+template <typename F> struct Condata {
+  constexpr Condata(F _f, std::string_view _description, int _error_code)
       : pred(_f), description(_description), error_code(_error_code) {}
   F const pred;
   std::string_view const description;
@@ -25,7 +25,7 @@ template <typename F> struct ManualCondData {
  *
  * @tparam F the predicate.
  */
-template <typename F> struct ManualCondition {
+template <typename F> struct Condition {
   /**
    * @brief Construct a new condition object.
    *
@@ -33,10 +33,10 @@ template <typename F> struct ManualCondition {
    * @param _pred the predicate to check
    * @param _description the error to inform
    */
-  constexpr ManualCondition(cond_type _type, F _pred,
+  constexpr Condition(cond_type _type, F _pred,
                             std::string_view _description, int _error_code);
 
-  constexpr ManualCondition(cond_type _type, ManualCondData<F> _data);
+  constexpr Condition(cond_type _type, Condata<F> _data);
 
   /**
    * @brief create and return a condition, override it's type with this's type.
@@ -46,13 +46,13 @@ template <typename F> struct ManualCondition {
    * @return condition<new_f> return the new constructed predicate
    */
   template <typename new_f>
-  ManualCondition<new_f> operator=(ManualCondData<new_f> _pred) const;
+  Condition<new_f> operator=(Condata<new_f> _pred) const;
 
   template <typename new_f>
-  ManualCondition<new_f> operator=(ManualCondition<new_f> rhs) const;
+  Condition<new_f> operator=(Condition<new_f> rhs) const;
 
   cond_type m_type;
-  ManualCondData<F> const cond;
+  Condata<F> const cond;
   //   F const pred;
   //   std::string_view const description;
   //   int error_code;
@@ -61,7 +61,7 @@ template <typename F> struct ManualCondition {
 template <typename> struct is_m_condition {
   static constexpr auto value = false;
 };
-template <typename T> struct is_m_condition<ManualCondition<T>> {
+template <typename T> struct is_m_condition<Condition<T>> {
   static constexpr auto value = true;
 };
 
@@ -71,27 +71,27 @@ concept m_condition = is_m_condition<T>::value;
 /*****************IMPLEMENTATION*****************/
 
 template <typename F>
-constexpr ManualCondition<F>::ManualCondition(cond_type _type, F _pred,
+constexpr Condition<F>::Condition(cond_type _type, F _pred,
                                               std::string_view _description,
                                               int _error_code)
     : m_type(_type), cond(_pred, _description, _error_code){};
 
 template <typename F>
-constexpr ManualCondition<F>::ManualCondition(cond_type _type,
-                                              ManualCondData<F> _data)
+constexpr Condition<F>::Condition(cond_type _type,
+                                              Condata<F> _data)
     : cond(_data), m_type(_type) {}
 
 template <typename F>
 template <typename new_f>
-ManualCondition<new_f>
-ManualCondition<F>::operator=(ManualCondData<new_f> _pred) const {
-  return ManualCondition<new_f>(this->m_type, _pred);
+Condition<new_f>
+Condition<F>::operator=(Condata<new_f> _pred) const {
+  return Condition<new_f>(this->m_type, _pred);
 }
 
 template <typename F>
 template <typename new_f>
-ManualCondition<new_f>
-ManualCondition<F>::operator=(ManualCondition<new_f> rhs) const {
+Condition<new_f>
+Condition<F>::operator=(Condition<new_f> rhs) const {
   rhs.m_type = this->m_type;
   return std::move(rhs);
 }
@@ -102,13 +102,13 @@ ManualCondition<F>::operator=(ManualCondition<new_f> rhs) const {
  * static objects that give you the ability to write python-;like parameter
  * passing
  */
-static constexpr ManualCondition pre(
+static constexpr Condition pre(
     precondition, []() {}, "", 0);
-static constexpr ManualCondition invar(
+static constexpr Condition invar(
     invariant, [] {}, "", 0);
-static constexpr ManualCondition post(
+static constexpr Condition post(
     postcondition, [] {}, "", 0);
 
-} // namespace Contract::Manual
+} // namespace Contract_ns::Manual
 
 #endif // MANUAL_CONDITION__HPP
