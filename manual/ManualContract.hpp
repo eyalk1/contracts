@@ -67,7 +67,7 @@ private:
 template <typename ErrorGenerator_t, m_condition... conditions>
 Contract<ErrorGenerator_t, conditions...>::Contract(ErrorGenerator_t _f,
                                                     conditions... _conditions)
-    : m_conditions(_conditions...), m_predicate(_f) {
+    : m_predicate(_f), m_conditions(_conditions...) {
   // static_assert(is_same_template_v<conditions, condition> && ... );
 }
 

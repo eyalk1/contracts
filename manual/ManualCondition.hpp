@@ -1,7 +1,7 @@
 #ifndef MANUAL_CONDITION__HPP
 #define MANUAL_CONDITION__HPP
 
-#include "CommonCondition.hpp"
+#include "../CommonCondition.hpp"
 
 #include <string_view>
 #include <utility>
@@ -78,7 +78,7 @@ constexpr Condition<F>::Condition(cond_type _type, F _pred,
 
 template <typename F>
 constexpr Condition<F>::Condition(cond_type _type, Condata<F> _data)
-    : cond(_data), m_type(_type) {}
+    : m_type(_type), cond(_data) {}
 
 template <typename F>
 template <typename new_f>

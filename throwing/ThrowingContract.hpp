@@ -58,7 +58,7 @@ private:
 template <t_condition... conditions>
 Contract<conditions...>::Contract(std::experimental::source_location _location,
                                   conditions... _conditions)
-    : m_conditions(_conditions...), location(_location) {
+    : location(_location), m_conditions(_conditions...) {
   go_over(precondition | invariant);
 }
 

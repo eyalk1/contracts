@@ -1,7 +1,7 @@
 #ifndef THROWING_CONDITION__HPP
 #define THROWING_CONDITION__HPP
 
-#include "CommonCondition.hpp"
+#include "../CommonCondition.hpp"
 
 #include <stdexcept>
 #include <string_view>

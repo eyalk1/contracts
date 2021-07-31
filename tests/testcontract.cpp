@@ -40,16 +40,16 @@ int main() {
                      invar<std::runtime_error> =
                          Condata([] { return false; }, "invariant is shit"));
 
-  // auto c = Contract(runtime_builder,
-  //                     // post=std::pair{[]{return 9;}, "post is shit"},
-  //                     // pre=std::pair{[]{return 0;}, "pre isn't shit"},
-  //                     pre_m=bublul);
+  auto c = Contract(runtime_builder,
+                      // post=std::pair{[]{return 9;}, "post is shit"},
+                      // pre=std::pair{[]{return 0;}, "pre isn't shit"},
+                      pre_m=bublul);
 
-  // if (!c.check(precondition | invariant))
-  // {
-  //     std::cout << "in main " << c.m_error.second << std::endl;
-  //     return c.m_error.first;
-  // }
+  if (!c.check(precondition | invariant))
+  {
+      std::cout << "in main " << c.m_error.second << std::endl;
+      return c.m_error.first;
+  }
 
   // ...
 
