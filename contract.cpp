@@ -1,6 +1,7 @@
 #include "include/ManualContract.hpp"
-// #include "include/ThrowingContract.hpp"
+#include "include/ThrowingContract.hpp"
 #include "include/ManualCondition.hpp"
+#include "include/ThrowingCondition.hpp"
 
 
 #include <experimental/source_location>
@@ -9,11 +10,10 @@
 #include <string_view>
 
 
-// TODO: add throwing predicate-provided exception.
 // TODO: add tests
 // TODO: add README.md
-// TODO: use structures instead of triple tuples
-
+// TODO: add ns
+// TODO: clean todo's
 using myError_t = std::pair<int, std::string>;
 
 auto runtime_builder = [](std::experimental::source_location context,
@@ -24,23 +24,29 @@ auto runtime_builder = [](std::experimental::source_location context,
 };
 
 int main() {
-  auto value_to_return = 8;
-  ManualCondition bublul(
-      precondition, [] { return false; }, "invariant is shit", 76);
-  // auto T = TCONTRACT(post = std::pair{[] { return true; }, "post is shit"},
-  //                    pre = std::pair{[] { return true; }, "pre isn't shit"},
-  //                    invar = bublul);
+  auto value_to_return = 0;
+  // ManualCondition bublul(
+  //     precondition, [] { return false; }, "invariant is shit", 76);
+  auto k = [] { return false;};
 
-  auto c = ManualContract(runtime_builder,
-                      // post=std::pair{[]{return 9;}, "post is shit"},
-                      // pre=std::pair{[]{return 0;}, "pre isn't shit"},
-                      pre_m=bublul);
+  ThrowingCondition<decltype(k), std::runtime_error> bublul(
+      precondition, k, "pre is shit");
 
-  if (!c.check(precondition | invariant))
-  {
-      std::cout << "in main " << c.m_error.second << std::endl;
-      return c.m_error.first;
-  }
+  ThrowingCondition<decltype(k), std::logic_error> bublul2(
+      invariant, k, "invariant is shit");
+
+  auto T = TCONTRACT(bublul, bublul2);
+
+  // auto c = ManualContract(runtime_builder,
+  //                     // post=std::pair{[]{return 9;}, "post is shit"},
+  //                     // pre=std::pair{[]{return 0;}, "pre isn't shit"},
+  //                     pre_m=bublul);
+
+  // if (!c.check(precondition | invariant))
+  // {
+  //     std::cout << "in main " << c.m_error.second << std::endl;
+  //     return c.m_error.first;
+  // }
 
   // ...
 

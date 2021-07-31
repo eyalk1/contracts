@@ -1,11 +1,12 @@
-#ifndef CONDITION__HPP
-#define CONDITION__HPP
+#ifndef MANUAL_CONDITION__HPP
+#define MANUAL_CONDITION__HPP
+
+#include "CommonCondition.hpp"
 
 #include <optional>
 #include <string_view>
 #include <utility>
 
-enum cond_type { PRE = 1, INVARIANT = 2, POST = 4 };
 
 using cond_type_t = std::underlying_type_t<cond_type>;
 
@@ -103,13 +104,6 @@ ManualCondition<F>::operator=(ManualCondition<new_f> rhs) const {
 /*****************UTILITIES*****************/
 
 /**
- * makes it a bit less tedious to write conditions.
- */
-static constexpr auto precondition = cond_type::PRE;
-static constexpr auto invariant = cond_type::INVARIANT;
-static constexpr auto postcondition = cond_type::POST;
-
-/**
  * static objects that give you the ability to write python-;like parameter
  * passing
  */
@@ -119,4 +113,4 @@ static constexpr ManualCondition invar_m(
     invariant, [] {}, "", 0);
 static constexpr ManualCondition post_m(
     postcondition, [] {}, "", 0);
-#endif // CONDITION__HPP
+#endif // MANUAL_CONDITION__HPP
