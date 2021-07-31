@@ -1,6 +1,6 @@
 #ifndef MANUAL_CONTRACT__HPP
 #define MANUAL_CONTRACT__HPP
-#include "condition.hpp"
+#include "ManualCondition.hpp"
 #include "utilities.hpp"
 
 #include <boost/hana.hpp>
@@ -9,7 +9,6 @@
 #include <iostream>
 #include <tuple>
 #include <type_traits>
-
 
 /**
  * @brief A contract class with manual error control.
@@ -21,7 +20,7 @@
  * 3. error code provided by the corresponding condition object
  * @tparam conditions
  */
-template <typename ErrorGenerator_t, condition_t... conditions>
+template <typename ErrorGenerator_t, m_condition... conditions>
 struct ManualContract {
 
   using Error_t = std::result_of_t<ErrorGenerator_t(
@@ -67,20 +66,20 @@ private:
  * @param _f the function object.
  * @param _conditions the list of conditions for this contract.
  */
-template <typename ErrorGenerator_t, condition_t... conditions>
+template <typename ErrorGenerator_t, m_condition... conditions>
 ManualContract<ErrorGenerator_t, conditions...>::ManualContract(
     ErrorGenerator_t _f, conditions... _conditions)
     : m_conditions(_conditions...), m_predicate(_f) {
-        // static_assert(is_same_template_v<conditions, condition> && ... );
-    }
+  // static_assert(is_same_template_v<conditions, condition> && ... );
+}
 
-template <typename ErrorGenerator_t, condition_t... conditions>
+template <typename ErrorGenerator_t, m_condition... conditions>
 bool ManualContract<ErrorGenerator_t, conditions...>::check(
     cond_type_t check, std::experimental::source_location loc) {
   return calculateError(check, std::move(loc));
 }
 
-template <typename ErrorGenerator_t, condition_t... conditions>
+template <typename ErrorGenerator_t, m_condition... conditions>
 bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
     cond_type_t to_check, std::experimental::source_location loc) {
   bool erred_yet{false};
@@ -91,12 +90,11 @@ bool ManualContract<ErrorGenerator_t, conditions...>::calculateError(
   // erred.
   boost::hana::for_each(m_conditions, [to_check, &erred_yet, &description,
                                        &EC](auto const &condition) {
-    if (auto _ec = condition.pred();
-        !erred_yet && (condition.m_type & to_check) && _ec) {
+    if (!erred_yet && (condition.m_type & to_check) && (!condition.cond.pred())) {
       erred_yet = true;
 
-      description = condition.description;
-      EC = _ec;
+      description = condition.cond.description;
+      EC = condition.cond.error_code;
     }
   });
 
