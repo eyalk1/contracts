@@ -3,15 +3,33 @@
 
 #include "CommonCondition.hpp"
 
+#include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 namespace Contract::Throwing {
 
-template <typename F> struct ThrowingCondData {
-  constexpr ThrowingCondData(F _pred, std::string_view _description);
+template <typename F, typename Exc> struct ThrowingCondition;
+
+template <typename F, typename Exc = void> struct ThrowingCondData {
+  constexpr ThrowingCondData(F _pred, std::string_view _description,
+                             cond_type _type);
+  Exc getException(std::string const &description) const;
   F const pred;
   std::string_view const description;
+  cond_type m_type;
+
+  /**
+   * @brief create and return a condition, override it's type with this's type.
+   *
+   * @tparam new_f predicate of new condition
+   * @param _pred predicate of new condition
+   * @return condition<new_f> return the new constructed predicate
+   */
+  template <typename new_f, typename new_Exc>
+  ThrowingCondition<new_f, Exc>
+  operator=(ThrowingCondData<new_f, new_Exc> cond) const;
 };
 
 /**
@@ -33,27 +51,13 @@ template <typename F, typename Exc> struct ThrowingCondition {
    */
   constexpr ThrowingCondition(cond_type _type, F _pred,
                               std::string_view _description);
-  constexpr ThrowingCondition(cond_type _type, ThrowingCondData<F> _cond);
-
-  /**
-   * @brief create and return a condition, override it's type with this's type.
-   *
-   * @tparam new_f predicate of new condition
-   * @param _pred predicate of new condition
-   * @return condition<new_f> return the new constructed predicate
-   */
-  template <typename new_f, typename new_Exc>
-  ThrowingCondition<new_f, new_Exc>
-  operator=(ThrowingCondData<new_f> cond) const;
+  constexpr ThrowingCondition(ThrowingCondData<F, Exc> _cond);
 
   template <typename new_f, typename new_Exc>
   ThrowingCondition<new_f, new_Exc>
   operator=(ThrowingCondition<new_f, new_Exc> rhs) const;
 
-  Exc getException(std::string const &description) const;
-
-  cond_type m_type;
-  ThrowingCondData<F> cond;
+  ThrowingCondData<F, Exc> cond;
 };
 
 template <typename> struct is_condition {
@@ -72,18 +76,18 @@ concept t_condition = is_condition<T>::value;
 template <typename F, typename Exc>
 constexpr ThrowingCondition<F, Exc>::ThrowingCondition(
     cond_type _type, F _pred, std::string_view _description)
-    : m_type(_type), cond(_pred, _description){};
+    : cond(_pred, _description, _type){};
 
 template <typename F, typename Exc>
 constexpr ThrowingCondition<F, Exc>::ThrowingCondition(
-    cond_type _type, ThrowingCondData<F> _cond)
-    : m_type(_type), cond(_cond){};
+    ThrowingCondData<F, Exc> _cond)
+    : cond(_cond){};
 
 template <typename F, typename Exc>
 template <typename new_f, typename new_Exc>
-ThrowingCondition<new_f, new_Exc>
-ThrowingCondition<F, Exc>::operator=(ThrowingCondData<new_f> cond) const {
-  return ThrowingCondition<new_f, new_Exc>(this->m_type, cond);
+ThrowingCondition<new_f, Exc> ThrowingCondData<F, Exc>::operator=(
+    ThrowingCondData<new_f, new_Exc> cond) const {
+  return ThrowingCondition<new_f, Exc>(cond.m_type, cond.pred, cond.description);
 }
 
 template <typename F, typename Exc>
@@ -94,13 +98,13 @@ ThrowingCondition<new_f, new_Exc> ThrowingCondition<F, Exc>::operator=(
   return std::move(rhs);
 }
 
-template <typename F>
-constexpr ThrowingCondData<F>::ThrowingCondData(F _pred,
-                                                std::string_view _description)
-    : pred(_pred), description(_description) {}
+template <typename F, typename Exc>
+constexpr ThrowingCondData<F, Exc>::ThrowingCondData(
+    F _pred, std::string_view _description, cond_type _type)
+    : pred(_pred), description(_description), m_type(_type) {}
 
 template <typename F, typename Exc>
-Exc ThrowingCondition<F, Exc>::getException(
+Exc ThrowingCondData<F, Exc>::getException(
     std::string const &description) const {
   return Exc(description);
 };
@@ -111,17 +115,16 @@ Exc ThrowingCondition<F, Exc>::getException(
  * static objects that give you the ability to write python-like parameter
  * passing
  */
-template <typename F, typename Exc>
-static constexpr ThrowingCondition<F, Exc> pre(
-    precondition, [] {}, "");
+auto empty = [] {};
 
-template <typename F, typename Exc>
-static constexpr ThrowingCondition<F, Exc> invar(
-    invariant, [] {}, "");
+template <typename Error>
+static constexpr ThrowingCondData<decltype(empty), Error> pre(empty, "", precondition);
 
-template <typename F, typename Exc>
-static constexpr ThrowingCondition<F, Exc> post(
-    postcondition, [] {}, "");
+template <typename Error>
+static constexpr ThrowingCondData<decltype(empty), Error> invar(empty, "", invariant);
+
+template <typename Error>
+static constexpr ThrowingCondData<decltype(empty), Error> post(empty, "", postcondition);
 
 } // namespace Contract::Throwing
 
