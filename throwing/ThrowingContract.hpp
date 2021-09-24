@@ -72,17 +72,17 @@ Contract<conditions...>::~Contract() {
 template <t_condition... conditions>
 void Contract<conditions...>::check_conditions(cond_type_t filt) {
   boost::hana::for_each(m_conditions, [this, filt](auto const &condition) {
-    if ((condition.m_cond.m_type & filt) && !(condition.m_cond.pred()))
-      throw condition.m_cond.getException(
-          GenerateException(this->location, condition.m_cond.description));
+    if ((condition.m_type & filt) && !(condition.pred()))
+      throw condition.getException(
+          GenerateException(this->location, condition.description));
   });
 }
 
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description) {
-  return fmt::format(
-    "condition not met at the function: ", loc.function_name(),
-    ".\n the error is: ", description);
+  return fmt::format("{}: {}.\n{}: {}",
+    "condition not met at the function", loc.function_name(),
+    "the error is", description);
 }
 
 } // namespace Contract_ns::Throwing

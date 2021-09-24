@@ -10,7 +10,7 @@
 #include <string_view>
 
 using Contract_ns::Throwing::Contract;
-using Contract_ns::Throwing::Condata;
+using Contract_ns::Throwing::Condition;
 using Contract_ns::precondition;
 using Contract_ns::invariant;
 using Contract_ns::postcondition;
@@ -36,9 +36,9 @@ int main() {
   //     precondition, [] { return false; }, "invariant is shit", 76);
 
   auto T = TCONTRACT(pre<std::logic_error> =
-                         Condata([] { return true; }, "poopy poop"),
+                         Condition([] { return true; }, "poopy poop"),
                      invar<std::runtime_error> =
-                         Condata([] { return false; }, "invariant is shit"));
+                         Condition([] { return false; }, "invariant is shit"));
 
   auto c = Contract(runtime_builder,
                       // post=std::pair{[]{return 9;}, "post is shit"},
