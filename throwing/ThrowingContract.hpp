@@ -3,6 +3,7 @@
 
 #include "ThrowingCondition.hpp"
 
+#include <fmt/core.h>
 #include <boost/hana.hpp>
 #include <experimental/source_location>
 #include <sstream>
@@ -22,7 +23,8 @@ namespace Contract_ns::Throwing {
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description);
 
-template <t_condition... conditions> struct Contract {
+template <t_condition... conditions>
+struct Contract {
   /**
    * @brief Construct a new Throwing Contract object. go over the pre and
    * invariant conditions.
@@ -47,9 +49,9 @@ private:
    *
    * @param filt bitwise type filter.
    */
-  void go_over(cond_type_t filt);
+  void check_conditions(cond_type_t filt);
 
-  std::experimental::source_location location;
+  std::experimental::source_location const location;
   boost::hana::tuple<conditions...> const m_conditions;
 };
 
@@ -59,20 +61,17 @@ template <t_condition... conditions>
 Contract<conditions...>::Contract(std::experimental::source_location _location,
                                   conditions... _conditions)
     : location(_location), m_conditions(_conditions...) {
-  go_over(precondition | invariant);
-}
-
-template <t_condition... conditions> Contract<conditions...>::~Contract() {
-  go_over(postcondition | invariant);
+  check_conditions(precondition | invariant);
 }
 
 template <t_condition... conditions>
-void Contract<conditions...>::go_over(cond_type_t filt) {
+Contract<conditions...>::~Contract() {
+  check_conditions(postcondition | invariant);
+}
+
+template <t_condition... conditions>
+void Contract<conditions...>::check_conditions(cond_type_t filt) {
   boost::hana::for_each(m_conditions, [this, filt](auto const &condition) {
-    // std::cout << "in loop filter " << filt << " condition.m_type "
-    //           << condition.m_type << " condition.cond.description "
-    //           << condition.cond.description << " condition.cond.pred() "
-    //           << condition.cond.pred() << '\n';
     if ((condition.m_cond.m_type & filt) && !(condition.m_cond.pred()))
       throw condition.m_cond.getException(
           GenerateException(this->location, condition.m_cond.description));
@@ -81,10 +80,9 @@ void Contract<conditions...>::go_over(cond_type_t filt) {
 
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description) {
-  std::stringstream ss;
-  ss << "condition not met at entrance to the function " << loc.function_name()
-     << " .the error is: " << description;
-  return ss.str();
+  return fmt::format(
+    "condition not met at the function: ", loc.function_name(),
+    ".\n the error is: ", description);
 }
 
 } // namespace Contract_ns::Throwing

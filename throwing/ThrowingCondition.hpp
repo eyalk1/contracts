@@ -109,15 +109,23 @@ static constexpr Condata<decltype(empty), Error> invar(empty, "", invariant);
 template <typename Error>
 static constexpr Condata<decltype(empty), Error> post(empty, "", postcondition);
 
-template <typename> struct is_condition {
-  static constexpr auto value = false;
-};
-template <typename T, typename Exc> struct is_condition<Condition<T, Exc>> {
-  static constexpr auto value = true;
-};
+template<typename...>
+constexpr bool is_same_template{false};
+
+template<
+  template<typename...> typename T,
+  typename... A,
+  typename... B>
+constexpr bool is_same_template<
+  T<A...>,
+  T<B...>>{true};
 
 template <typename T>
-concept t_condition = is_condition<T>::value;
+concept t_condition = is_same_template<T, Condition<decltype(empty), int>>;
+
+
+// template <typename T>
+// concept t_condition = is_condition_data<T>::value;Condata
 
 } // namespace Contract_ns::Throwing
 
