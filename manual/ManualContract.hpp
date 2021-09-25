@@ -1,6 +1,7 @@
 #ifndef MANUAL_CONTRACT__HPP
 #define MANUAL_CONTRACT__HPP
-#include "ManualCondition2.hpp"
+
+#include "ManualCondition.hpp"
 
 #include <boost/hana.hpp>
 #include <experimental/source_location>
@@ -89,11 +90,11 @@ auto Contract<ErrorGenerator_t, conditions...>::check(
   //  at run-time.
   boost::hana::for_each(
       m_conditions, [to_check, &erred_yet, &description, &EC](auto const &condition) {
-        if (!erred_yet && (condition.m_type & to_check) && (!condition.cond.pred())) {
+        if (!erred_yet && (condition.m_type & to_check) && (!condition.pred())) {
           erred_yet = true;
 
-          description = condition.cond.description;
-          EC = condition.cond.error_code;
+          description = condition.description;
+          EC = condition.m_error_code;
           return true;
         }
         return false;

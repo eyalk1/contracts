@@ -6,7 +6,6 @@
 #include "CommonCondition.hpp"
 
 using Contract_ns::Manual::Contract;
-using Contract_ns::Manual::Condata;
 using Contract_ns::precondition;
 using Contract_ns::invariant;
 using Contract_ns::postcondition;

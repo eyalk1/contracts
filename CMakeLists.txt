@@ -4,7 +4,7 @@ find_package(fmt)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
 
 # add_subdirectory(fmt)
 

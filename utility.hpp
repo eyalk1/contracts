@@ -32,7 +32,7 @@ using myError_t = std::pair<int, std::string>;
 
 auto runtime_builder = [](std::experimental::source_location context,
                           std::string_view description, int EC) -> myError_t {
-  return std::make_pair(EC, fmt::format("{} {}", description, context.function_name()));
+  return {EC, fmt::format("{} {}", description, context.function_name())};
 };
 
 

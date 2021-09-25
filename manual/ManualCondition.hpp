@@ -9,11 +9,11 @@
 #include <type_traits>
 #include <utility>
 
-namespace Contract_ns::Throwing {
+namespace Contract_ns::Manual {
 
 template <typename F> struct Condition {
-  constexpr Condition(F _pred, std::string_view _description,
-                      int error_code, cond_type _type = precondition);
+  constexpr Condition(F _pred, std::string_view _description, int error_code,
+                      cond_type _type = precondition);
   int m_error_code;
   F const pred;
   std::string_view const description;
@@ -33,8 +33,7 @@ template <typename F> struct Condition {
 template <typename F>
 constexpr Condition<F>::Condition(F _pred, std::string_view _description,
                                   int error_code, cond_type _type)
-    : pred(_pred), description(_description), m_type(_type),
-      m_error_code(error_code) {}
+    : m_error_code(error_code), pred(_pred), description(_description), m_type(_type) {}
 
 template <typename F>
 template <typename new_f>
@@ -60,6 +59,6 @@ auto invar = condition_generator(invariant);
 template <typename T>
 concept m_condition = is_same_template<T, Condition<decltype(empty)>>;
 
-} // namespace Contract_ns::Throwing
+} // namespace Contract_ns::Manual
 
 #endif // THROWING_CONDITION__HPP
