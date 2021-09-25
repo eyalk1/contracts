@@ -21,14 +21,6 @@ using Contract_ns::Throwing::post;
 // TODO: add tests
 // TODO: add README.md
 
-using myError_t = std::pair<int, std::string>;
-
-auto runtime_builder = [](std::experimental::source_location context,
-                          std::string_view description, int EC) -> myError_t {
-  std::stringstream ss;
-  ss << description << " " << context.function_name();
-  return {EC, ss.str()};
-};
 
 int main() {
   auto value_to_return = 0;

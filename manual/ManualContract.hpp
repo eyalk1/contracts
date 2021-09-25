@@ -1,12 +1,17 @@
 #ifndef MANUAL_CONTRACT__HPP
 #define MANUAL_CONTRACT__HPP
-#include "ManualCondition.hpp"
+#include "ManualCondition2.hpp"
 
 #include <boost/hana.hpp>
 #include <experimental/source_location>
+#include <fmt/core.h>
 #include <type_traits>
 
 namespace Contract_ns::Manual {
+
+auto defaultErrorGenerator = [](auto loc, auto description, auto EC) {
+  return fmt::format("{}\n{}\n{}", loc.function_name, description, EC);
+};
 
 /**
  * @brief A contract class with manual error control.
@@ -23,6 +28,7 @@ struct Contract {
 
   using Error_t = std::result_of_t<ErrorGenerator_t(
       std::experimental::source_location, std::string_view, int)>;
+  using maybeError = std::optional<Error_t>;
 
   Contract(ErrorGenerator_t _f, conditions... _conditions);
 
@@ -34,11 +40,9 @@ struct Contract {
    * @return true there is no error.
    * @return false there is an error.
    */
-  bool check(cond_type_t check,
+  auto check(cond_type_t check,
              std::experimental::source_location loc =
-                 std::experimental::source_location::current());
-
-  Error_t m_error;
+                 std::experimental::source_location::current()) -> maybeError;
 
 private:
   /**
@@ -49,10 +53,10 @@ private:
    * @return true there is no error.
    * @return false there is an error.
    */
-  bool calculateError(cond_type_t to_check,
-                      std::experimental::source_location loc);
+  // bool calculateError(cond_type_t to_check,
+  //                     std::experimental::source_location loc);
 
-  ErrorGenerator_t m_predicate;
+  ErrorGenerator_t const generateError;
   boost::hana::tuple<conditions...> const m_conditions;
 };
 
@@ -67,41 +71,38 @@ private:
 template <typename ErrorGenerator_t, m_condition... conditions>
 Contract<ErrorGenerator_t, conditions...>::Contract(ErrorGenerator_t _f,
                                                     conditions... _conditions)
-    : m_predicate(_f), m_conditions(_conditions...) {
-  // static_assert(is_same_template_v<conditions, condition> && ... );
+    : generateError(_f), m_conditions(_conditions...) {
 }
 
 template <typename ErrorGenerator_t, m_condition... conditions>
-bool Contract<ErrorGenerator_t, conditions...>::check(
-    cond_type_t check, std::experimental::source_location loc) {
-  return calculateError(check, std::move(loc));
-}
-
-template <typename ErrorGenerator_t, m_condition... conditions>
-bool Contract<ErrorGenerator_t, conditions...>::calculateError(
-    cond_type_t to_check, std::experimental::source_location loc) {
+auto Contract<ErrorGenerator_t, conditions...>::check(
+    cond_type_t to_check, std::experimental::source_location loc)
+    -> Contract<ErrorGenerator_t, conditions...>::maybeError {
   bool erred_yet{false};
   std::string_view description;
   int EC{0};
 
   // go over the conditions and find conditions that the concerning predicate
   // erred.
-  boost::hana::for_each(m_conditions, [to_check, &erred_yet, &description,
-                                       &EC](auto const &condition) {
-    if (!erred_yet && (condition.m_type & to_check) &&
-        (!condition.cond.pred())) {
-      erred_yet = true;
+  // cannot be switched into find_if since it:
+  //  outputs compile time data(the element found in the tuple)
+  //  at run-time.
+  boost::hana::for_each(
+      m_conditions, [to_check, &erred_yet, &description, &EC](auto const &condition) {
+        if (!erred_yet && (condition.m_type & to_check) && (!condition.cond.pred())) {
+          erred_yet = true;
 
-      description = condition.cond.description;
-      EC = condition.cond.error_code;
-    }
-  });
+          description = condition.cond.description;
+          EC = condition.cond.error_code;
+          return true;
+        }
+        return false;
+      });
 
   if (!erred_yet)
-    return true;
+    return std::nullopt;
 
-  m_error = m_predicate(loc, description, EC);
-  return false;
+  return generateError(loc, description, EC);
 }
 
 } // namespace Contract_ns::Manual

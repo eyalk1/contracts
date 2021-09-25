@@ -1,25 +1,21 @@
 #include <gtest/gtest.h>
 
-#include "../Throwing.hpp"
 #include "../CommonCondition.hpp"
+#include "../Manual.hpp"
 
+#include "../utility.hpp"
+
+#include <concepts>
 #include <iostream>
 #include <type_traits>
-#include <concepts>
 
-using namespace Contract_ns::Throwing;
+using namespace Contract_ns::Manual;
 
 TEST(HelloTest, BasicAssertions) {
-  try{
-    
-  auto c = TCONTRACT(
-    pre<std::runtime_error>([] {return true;}, "pre false"),
-    post<std::logic_error>([]{return false;}, "post false"));
-    // Condition<std::runtime_error>([] { return false; }, "custom", precondition),
-    // pre<std::runtime_error>  = Condition([] { return false; }, "pre"),
-    // post<std::runtime_error> = Condition([] { return true; }, "post")
-  // );
-  }catch(std::exception const& e){
-    std::cout << e.what() << std::endl;
-  }
+    auto c = Contract(runtime_builder,
+                      Condition(precondition, falser, "falser pre", 69));
+    if(auto error = c.check(precondition); error.has_value())
+    {
+      std::cout << error.value().second;
+    }
 }
