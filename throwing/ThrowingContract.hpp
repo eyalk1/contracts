@@ -55,6 +55,10 @@ private:
   boost::hana::tuple<conditions...> const m_conditions;
 };
 
+template<t_condition... conditions>
+Contract(conditions...)->Contract<conditions...>;
+
+
 /*****************IMPLEMENTATION*****************/
 
 template <t_condition... conditions>
