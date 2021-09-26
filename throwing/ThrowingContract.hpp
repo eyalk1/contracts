@@ -23,7 +23,11 @@ namespace Contract_ns::Throwing {
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description);
 
-template <t_condition... conditions> struct Contract {
+struct IContract{
+  virtual void check_conditions(cond_type_t filt) = 0;
+};
+
+template <bool has_base = false, t_condition... conditions> struct Contract {
   /**
    * @brief Construct a new Throwing Contract object. go over the pre and
    * invariant conditions.
@@ -34,13 +38,18 @@ template <t_condition... conditions> struct Contract {
    */
   Contract(std::experimental::source_location _location,
            conditions... _conditions);
+
+  Contract(std::experimental::source_location _location,
+            IContract* base,
+           conditions... _conditions);
+
   /**
    * @brief Destroy the Throwing Contract object. go over the post and invariant
    * conditions.
    */
   ~Contract();
 
-  auto const &getConditions() { return m_conditions; };
+  // auto const &getConditions() { return m_conditions; };
 
 private:
   /**
@@ -50,30 +59,45 @@ private:
    *
    * @param filt bitwise type filter.
    */
-  void check_conditions(cond_type_t filt);
+  void check_conditions(cond_type_t filt) final;
 
+  IContract const & base;
   std::experimental::source_location const location;
   boost::hana::tuple<conditions...> const m_conditions;
 };
 
 template <t_condition... conditions>
-Contract(conditions...) -> Contract<conditions...>;
+Contract(std::experimental::source_location, conditions...) -> Contract<false, conditions...>;
+
+template <t_condition... conditions>
+Contract(std::experimental::source_location, IContract* ,conditions...) -> Contract<true, conditions...>;
 
 /*****************IMPLEMENTATION*****************/
 
-template <t_condition... conditions>
-Contract<conditions...>::Contract(std::experimental::source_location _location,
+template <bool has_base, t_condition... conditions>
+Contract<has_base, conditions...>::Contract(std::experimental::source_location _location,
                                   conditions... _conditions)
     : location(_location), m_conditions(_conditions...) {
   check_conditions(precondition | invariant);
 }
 
-template <t_condition... conditions> Contract<conditions...>::~Contract() {
+template <bool has_base, t_condition... conditions>
+Contract<has_base, conditions...>::Contract(std::experimental::source_location _location,
+                                  IContract* base,
+                                  conditions... _conditions)
+    : location(_location), m_conditions(_conditions...), base(base) {
+  check_conditions(precondition | invariant);
+}
+
+template <bool has_base, t_condition... conditions> Contract<has_base, conditions...>::~Contract() {
   check_conditions(postcondition | invariant);
 }
 
-template <t_condition... conditions>
-void Contract<conditions...>::check_conditions(cond_type_t filt) {
+template <bool has_base, t_condition... conditions>
+void Contract<has_base, conditions...>::check_conditions(cond_type_t filt) {
+  if constexpr (has_base)
+    base->check_conditions(filt);
+
   boost::hana::for_each(m_conditions, [this, filt](auto const &condition) {
     if ((condition.m_type & filt) && !(condition.pred()))
       throw condition.getException(

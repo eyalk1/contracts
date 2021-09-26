@@ -4,6 +4,7 @@
 
 #include "../CommonCondition.hpp"
 // #include "../Manual.hpp"
+#include "../Throwing.hpp"
 
 #include "../utility.hpp"
 
@@ -14,7 +15,9 @@
 // using namespace Contract_ns::Manual;
 
 TEST(HelloTest, BasicAssertions) {
-    child a;
+    auto c = TCONTRACT(pre<std::logic_error>(falser, "pre falser"));
+    auto c2 = TCONTRACT(pre<std::logic_error>(falser, "pre falser"), &c);
+    // child a;
     // auto c = Contract(runtime_builder,
     //                   pre(falser, "pre falser", 80),
     //                   Condition(falser, "falser pre", 69, precondition));
