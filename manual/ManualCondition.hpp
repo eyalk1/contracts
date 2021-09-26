@@ -1,5 +1,5 @@
-#ifndef THROWING_CONDITION__HPP
-#define THROWING_CONDITION__HPP
+#ifndef MANUAL_CONDITION__HPP
+#define MANUAL_CONDITION__HPP
 
 #include "../CommonCondition.hpp"
 #include "../utility.hpp"
@@ -61,4 +61,4 @@ concept m_condition = is_same_template<T, Condition<decltype(empty)>>;
 
 } // namespace Contract_ns::Manual
 
-#endif // THROWING_CONDITION__HPP
+#endif // MANUAL_CONDITION__HPP

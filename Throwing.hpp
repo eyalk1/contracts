@@ -10,5 +10,6 @@ using Contract_ns::Throwing::Condition;
 using Contract_ns::precondition;
 using Contract_ns::invariant;
 using Contract_ns::postcondition;
+using Contract_ns::Throwing::t_condition;
 
 #endif //THROWING__HPP
