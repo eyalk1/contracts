@@ -3,9 +3,9 @@
 
 #include "ThrowingCondition.hpp"
 
-#include <fmt/core.h>
 #include <boost/hana.hpp>
 #include <experimental/source_location>
+#include <fmt/core.h>
 #include <sstream>
 #include <string>
 
@@ -23,8 +23,7 @@ namespace Contract_ns::Throwing {
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description);
 
-template <t_condition... conditions>
-struct Contract {
+template <t_condition... conditions> struct Contract {
   /**
    * @brief Construct a new Throwing Contract object. go over the pre and
    * invariant conditions.
@@ -41,6 +40,8 @@ struct Contract {
    */
   ~Contract();
 
+  auto const &getConditions() { return m_conditions; };
+
 private:
   /**
    * @brief finds the first condition with the given type and that it's
@@ -55,9 +56,8 @@ private:
   boost::hana::tuple<conditions...> const m_conditions;
 };
 
-template<t_condition... conditions>
-Contract(conditions...)->Contract<conditions...>;
-
+template <t_condition... conditions>
+Contract(conditions...) -> Contract<conditions...>;
 
 /*****************IMPLEMENTATION*****************/
 
@@ -68,8 +68,7 @@ Contract<conditions...>::Contract(std::experimental::source_location _location,
   check_conditions(precondition | invariant);
 }
 
-template <t_condition... conditions>
-Contract<conditions...>::~Contract() {
+template <t_condition... conditions> Contract<conditions...>::~Contract() {
   check_conditions(postcondition | invariant);
 }
 
@@ -84,10 +83,12 @@ void Contract<conditions...>::check_conditions(cond_type_t filt) {
 
 std::string GenerateException(std::experimental::source_location loc,
                               std::string_view description) {
-  return fmt::format("{}: {}.\n{}: {}",
-    "condition not met at the function", loc.function_name(),
-    "the error is", description);
+  return fmt::format("{}: {}.\n{}: {}", "condition not met at the function",
+                     loc.function_name(), "the error is", description);
 }
+
+template <typename T>
+concept t_contract = is_same_template<T, Contract<>>;
 
 } // namespace Contract_ns::Throwing
 

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "usage_inheritance.hpp"
+#include "inheritance_usage.hpp"
 
 #include "../CommonCondition.hpp"
 // #include "../Manual.hpp"
@@ -14,7 +14,7 @@
 // using namespace Contract_ns::Manual;
 
 TEST(HelloTest, BasicAssertions) {
-    A a(pre<std::logic_error>(falser, "pre falser"));
+    child a;
     // auto c = Contract(runtime_builder,
     //                   pre(falser, "pre falser", 80),
     //                   Condition(falser, "falser pre", 69, precondition));

@@ -11,5 +11,6 @@ using Contract_ns::precondition;
 using Contract_ns::invariant;
 using Contract_ns::postcondition;
 using Contract_ns::Throwing::t_condition;
+using Contract_ns::Throwing::t_contract;
 
 #endif //THROWING__HPP
