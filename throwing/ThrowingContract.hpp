@@ -20,14 +20,15 @@ namespace Contract_ns::Throwing {
  * @param loc source_location
  */
 
-std::string GenerateException(std::experimental::source_location loc,
+std::string GenerateException(std::experimental::source_location const& loc,
                               std::string_view description);
 
-struct IContract{
-  virtual void check_conditions(cond_type_t filt) = 0;
+struct IContract {
+  virtual void check_conditions(cond_type_t filt, std::experimental::source_location const * const location = nullptr) const = 0;
 };
 
-template <bool has_base = false, t_condition... conditions> struct Contract {
+template <bool has_base = false, t_condition... conditions>
+struct Contract : public IContract {
   /**
    * @brief Construct a new Throwing Contract object. go over the pre and
    * invariant conditions.
@@ -39,8 +40,7 @@ template <bool has_base = false, t_condition... conditions> struct Contract {
   Contract(std::experimental::source_location _location,
            conditions... _conditions);
 
-  Contract(std::experimental::source_location _location,
-            IContract* base,
+  Contract(std::experimental::source_location _location, IContract *base,
            conditions... _conditions);
 
   /**
@@ -59,56 +59,68 @@ private:
    *
    * @param filt bitwise type filter.
    */
-  void check_conditions(cond_type_t filt) final;
+  void check_conditions(
+      cond_type_t filt,
+      std::experimental::source_location const * const location = nullptr) const final;
 
-  IContract const & base;
   std::experimental::source_location const location;
   boost::hana::tuple<conditions...> const m_conditions;
+  contain_if<has_base, IContract const *> base;
 };
 
 template <t_condition... conditions>
-Contract(std::experimental::source_location, conditions...) -> Contract<false, conditions...>;
+Contract(std::experimental::source_location, conditions...)
+    -> Contract<false, conditions...>;
 
 template <t_condition... conditions>
-Contract(std::experimental::source_location, IContract* ,conditions...) -> Contract<true, conditions...>;
+Contract(std::experimental::source_location, IContract *, conditions...)
+    -> Contract<true, conditions...>;
 
 /*****************IMPLEMENTATION*****************/
 
 template <bool has_base, t_condition... conditions>
-Contract<has_base, conditions...>::Contract(std::experimental::source_location _location,
-                                  conditions... _conditions)
+Contract<has_base, conditions...>::Contract(
+    std::experimental::source_location _location, conditions... _conditions)
     : location(_location), m_conditions(_conditions...) {
   check_conditions(precondition | invariant);
 }
 
 template <bool has_base, t_condition... conditions>
-Contract<has_base, conditions...>::Contract(std::experimental::source_location _location,
-                                  IContract* base,
-                                  conditions... _conditions)
-    : location(_location), m_conditions(_conditions...), base(base) {
+Contract<has_base, conditions...>::Contract(
+    std::experimental::source_location _location, IContract *base,
+    conditions... _conditions)
+    : location(_location), m_conditions(_conditions...), base{base} {
   check_conditions(precondition | invariant);
 }
 
-template <bool has_base, t_condition... conditions> Contract<has_base, conditions...>::~Contract() {
+template <bool has_base, t_condition... conditions>
+Contract<has_base, conditions...>::~Contract() {
   check_conditions(postcondition | invariant);
 }
 
 template <bool has_base, t_condition... conditions>
-void Contract<has_base, conditions...>::check_conditions(cond_type_t filt) {
-  if constexpr (has_base)
-    base->check_conditions(filt);
+void Contract<has_base, conditions...>::check_conditions(
+    cond_type_t filt, std::experimental::source_location const * const location) const {
+  auto const &where = location ? *location : this->location;
 
-  boost::hana::for_each(m_conditions, [this, filt](auto const &condition) {
-    if ((condition.m_type & filt) && !(condition.pred()))
+  if constexpr (has_base)
+    base.what->check_conditions(filt, &where);
+
+
+  boost::hana::for_each(m_conditions, [&where, filt](auto const &condition) {
+    if ((condition.m_type & filt) && !(condition.pred())) {
       throw condition.getException(
-          GenerateException(this->location, condition.description));
+          GenerateException(where, condition.description));
+    }
   });
 }
 
-std::string GenerateException(std::experimental::source_location loc,
+std::string GenerateException(std::experimental::source_location const& loc,
                               std::string_view description) {
-  return fmt::format("{}: {}.\n{}: {}", "condition not met at the function",
-                     loc.function_name(), "the error is", description);
+  return fmt::format("{}: {}.\n{}: {}.\n{}: {}",
+                      "condition not met at the function", loc.function_name(),
+                      "the error is", description,
+                      "line: ", loc.line());
 }
 
 template <typename T>

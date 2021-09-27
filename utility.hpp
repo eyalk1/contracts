@@ -35,5 +35,18 @@ auto runtime_builder = [](std::experimental::source_location context,
   return {EC, fmt::format("{} {}", description, context.function_name())};
 };
 
+template<bool does_contain, typename T>
+struct contain_if;
+
+template<typename T>
+struct contain_if<true, T>{
+  T what;
+  T& operator->(){ return what;};
+};
+
+template<typename T>
+struct contain_if<false, T>{
+};
+
 
 #endif //UTILITY
