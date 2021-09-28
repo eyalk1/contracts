@@ -17,6 +17,9 @@ auto falser = [] {return false;};
 template<typename T>
 concept exception = std::is_base_of_v<std::exception, T>;
 
+template<typename T>
+concept argumentless_function = std::invocable<T>;
+
 template<typename...>
 constexpr bool is_same_template{false};
 
@@ -41,7 +44,7 @@ struct contain_if;
 template<typename T>
 struct contain_if<true, T>{
   T what;
-  T& operator->(){ return what;};
+  T& operator*() const { return what;};
 };
 
 template<typename T>

@@ -25,10 +25,11 @@ TEST(HelloTest, BasicAssertions) {
         std::cout << "\n";
         try
         {
+            // throw std::runtime_error("poopy poop");
             auto c = TCONTRACT(post<std::logic_error>(maybe, "pre falser"));
             try
             {
-                auto c2 = TCONTRACT(&c,
+                auto c2 = TCONTRACT(c,
                                    post<std::runtime_error>(truer, "pre truer"));
             }
             catch(const std::logic_error& e)
