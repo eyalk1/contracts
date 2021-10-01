@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string_view>
 
-using Contract_ns::Throwing::Contract;
+using Contract_ns::Throwing::DryContract;
 using Contract_ns::Throwing::Condition;
 using Contract_ns::precondition;
 using Contract_ns::invariant;
@@ -32,7 +32,7 @@ int main() {
                      invar<std::runtime_error> =
                          Condition([] { return false; }, "invariant is shit"));
 
-  auto c = Contract(runtime_builder,
+  auto c = DryContract(runtime_builder,
                       // post=std::pair{[]{return 9;}, "post is shit"},
                       // pre=std::pair{[]{return 0;}, "pre isn't shit"},
                       pre_m=bublul);

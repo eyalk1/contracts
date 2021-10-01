@@ -25,13 +25,13 @@ auto defaultErrorGenerator = [](auto loc, auto description, auto EC) {
  * @tparam conditions
  */
 template <typename ErrorGenerator_t, m_condition... conditions>
-struct Contract {
+struct DryContract {
 
   using Error_t = std::result_of_t<ErrorGenerator_t(
       std::experimental::source_location, std::string_view, int)>;
   using maybeError = std::optional<Error_t>;
 
-  Contract(ErrorGenerator_t _f, conditions... _conditions);
+  DryContract(ErrorGenerator_t _f, conditions... _conditions);
 
   /**
    * @brief check for errors.
@@ -64,21 +64,21 @@ private:
 /*****************IMPLEMENTATION*****************/
 
 /**
- * @brief Construct a new Contract object
+ * @brief Construct a new DryContract object
  *
  * @param _f the function object.
  * @param _conditions the list of conditions for this contract.
  */
 template <typename ErrorGenerator_t, m_condition... conditions>
-Contract<ErrorGenerator_t, conditions...>::Contract(ErrorGenerator_t _f,
+DryContract<ErrorGenerator_t, conditions...>::DryContract(ErrorGenerator_t _f,
                                                     conditions... _conditions)
     : generateError(_f), m_conditions(_conditions...) {
 }
 
 template <typename ErrorGenerator_t, m_condition... conditions>
-auto Contract<ErrorGenerator_t, conditions...>::check(
+auto DryContract<ErrorGenerator_t, conditions...>::check(
     cond_type_t to_check, std::experimental::source_location loc)
-    -> Contract<ErrorGenerator_t, conditions...>::maybeError {
+    -> DryContract<ErrorGenerator_t, conditions...>::maybeError {
   bool erred_yet{false};
   std::string_view description;
   int EC{0};

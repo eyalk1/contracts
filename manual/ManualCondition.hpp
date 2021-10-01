@@ -11,13 +11,13 @@
 
 namespace Contract_ns::Manual {
 
-template <typename F> struct Condition {
+template <argumentless_function F> struct Condition {
   constexpr Condition(F _pred, std::string_view _description, int error_code,
                       cond_type _type = precondition);
-  int m_error_code;
+  int const m_error_code;
   F const pred;
   std::string_view const description;
-  cond_type m_type;
+  cond_type const m_type;
 
   /**
    * @brief create and return a condition, override it's type with this's type.
@@ -26,17 +26,17 @@ template <typename F> struct Condition {
    * @param _pred predicate of new condition
    * @return condition<new_f> return the new constructed predicate
    */
-  template <typename new_f>
+  template <argumentless_function new_f>
   Condition<new_f> operator=(Condition<new_f> cond) const;
 };
 
-template <typename F>
+template <argumentless_function F>
 constexpr Condition<F>::Condition(F _pred, std::string_view _description,
                                   int error_code, cond_type _type)
     : m_error_code(error_code), pred(_pred), description(_description), m_type(_type) {}
 
-template <typename F>
-template <typename new_f>
+template <argumentless_function F>
+template <argumentless_function new_f>
 Condition<new_f> Condition<F>::operator=(Condition<new_f> cond) const {
   return Condition<new_f>(cond.pred, cond.description, cond.m_error_code,
                           cond.m_type);

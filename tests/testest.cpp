@@ -8,6 +8,8 @@
 
 #include "../utility.hpp"
 
+#include <boost/hana/tuple.hpp>
+
 #include <concepts>
 #include <iostream>
 #include <type_traits>
@@ -19,14 +21,15 @@ auto maybe = []{ return !bool(rand() % 100);};
 
 
 TEST(HelloTest, BasicAssertions) {
+        int c = 0;
         for(auto i=0;i<1000;i++)
             if(!maybe())
-                std::cout << "1";
-        std::cout << "\n";
+                c++;
+
+        std::cout << c << "\n";
         try
         {
-            // throw std::runtime_error("poopy poop");
-            auto c = TCONTRACT(post<std::logic_error>(maybe, "pre falser"));
+            auto c = DryContract(post<std::logic_error>(maybe, "pre falser"));
             try
             {
                 auto c2 = TCONTRACT(c,
@@ -34,16 +37,16 @@ TEST(HelloTest, BasicAssertions) {
             }
             catch(const std::logic_error& e)
             {
-                std::cerr << e.what() << "hello\n";
+                std::cerr << e.what() << "\nhello\n";
             }
             catch(const std::runtime_error& e)
             {
-                std::cerr << e.what() << "bye bye\n";
+                std::cerr << e.what() << "\nbye bye\n";
             }
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << "this is fucking shit\n";
+            std::cerr << e.what() << "\nthis is fucking shit\n";
         }
     // child a;
     // auto c = Contract(runtime_builder,

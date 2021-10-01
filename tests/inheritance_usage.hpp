@@ -17,7 +17,7 @@
 
 // struct dad : public IBASE {
 //   using MyConditions = Condition<std::logic_error, decltype(falser)>;
-//   using MyContract = Contract<MyConditions>;
+//   using MyContract = DryContract<MyConditions>;
 //   MyContract c;
 //   dad() : c(TCONTRACT(pre<std::logic_error>(falser, "pre falser"))){};
 //   void makeSound() override { auto C = c; }
@@ -25,7 +25,7 @@
 
 // struct child : public dad {
 //   using MyContract =
-//       Contract<Condition<std::logic_error, decltype(truer)>, dad::MyConditions>;
+//       DryContract<Condition<std::logic_error, decltype(truer)>, dad::MyConditions>;
 //   MyContract c;
 //   child()
 //       : c(std::experimental::source_location::current(),
