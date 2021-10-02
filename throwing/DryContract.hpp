@@ -9,11 +9,12 @@
 #include <fmt/core.h>
 #include <sstream>
 #include <string>
-// dry contracts + friend activate factory function.
-// activate function
-// take just tuple for sub contract - i like most - cant be used for more than
-// two levels of inheritance
+#include <functional>
+#include <vector>
+
 namespace Contract_ns::Throwing {
+using super_list = std::vector<std::reference_wrapper<IContract const>>;
+using super_init_list = std::initializer_list<std::reference_wrapper<IContract const>>;
 
 template <bool has_super_contract = false, t_condition... conditions>
 struct DryContract : public IContract {
@@ -27,7 +28,7 @@ struct DryContract : public IContract {
    */
   DryContract(conditions... _conditions);
 
-  DryContract(IContract const &base, conditions... _conditions);
+  DryContract(super_init_list bases, conditions... _conditions);
 
   /**
    * @brief Destroy the Throwing DryContract object. go over the post and
@@ -48,9 +49,10 @@ protected:
   void check_conditions(
       int filt, std::experimental::source_location const &location) const final;
 
+
 private:
   boost::hana::tuple<conditions...> const m_conditions;
-  contain_if<has_super_contract, IContract const &> super;
+  contain_if<has_super_contract, super_list> supers;
 };
 
 /*****************IMPLEMENTATION*****************/
@@ -62,8 +64,8 @@ DryContract<has_super_contract, conditions...>::DryContract(
 
 template <bool has_super_contract, t_condition... conditions>
 DryContract<has_super_contract, conditions...>::DryContract(
-    IContract const &base, conditions... _conditions)
-    : m_conditions(_conditions...), super{base} {}
+    super_init_list base, conditions... _conditions)
+    : m_conditions(_conditions...), supers{base} {}
 
 template <bool has_super_contract, t_condition... conditions>
 DryContract<has_super_contract, conditions...>::~DryContract() noexcept(false) {
@@ -72,12 +74,16 @@ DryContract<has_super_contract, conditions...>::~DryContract() noexcept(false) {
 template <bool has_super_contract, t_condition... conditions>
 void DryContract<has_super_contract, conditions...>::check_conditions(
     int filt, std::experimental::source_location const &location) const {
+  // if we are already in an exception, we don't need to add another error on top of it.
+  if(std::uncaught_exceptions())
+    return;
 
   if constexpr (has_super_contract)
-    (*super).check_conditions(filt, location);
+    for(auto const & super : *supers)
+      super.get().check_conditions(filt, location);
 
   boost::hana::for_each(m_conditions, [&location, filt](auto const &condition) {
-    if (condition.does_violate(filt)) {
+    if (condition.is_violated(filt)) {
       throw condition.getException(location);
     }
   });

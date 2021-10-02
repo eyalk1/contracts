@@ -16,6 +16,7 @@ add_executable(
   TEST
   testest.cpp
 )
+
 target_link_libraries(
     TEST
   gtest_main

@@ -18,7 +18,11 @@ template<typename T>
 concept exception = std::is_base_of_v<std::exception, T>;
 
 template<typename T>
-concept argumentless_function = std::invocable<T>;
+concept argumentless_function =
+  requires(T t){
+    std::invocable<T>;
+    std::is_same_v<bool, decltype(t)>;
+  };
 
 template<typename...>
 constexpr bool is_same_template{false};
@@ -44,12 +48,16 @@ struct contain_if;
 template<typename T>
 struct contain_if<true, T>{
   T what;
-  T& operator*() const { return what;};
+  // T& operator*() const { return what;};
+  T const& operator*() const { return what;};
 };
 
 template<typename T>
 struct contain_if<false, T>{
 };
+
+template<class... Ts> struct overload : Ts... {using Ts::operator()...;};
+template<class... Ts> overload(Ts...) -> overload<Ts...>;
 
 
 #endif //UTILITY

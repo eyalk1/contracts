@@ -13,9 +13,12 @@ namespace Contract_ns::Throwing {
 template <bool has_super_contract, t_condition... conditions>
 struct Contract : public DryContract<has_super_contract, conditions...> {
   using Base = DryContract<has_super_contract, conditions...>;
+
   Contract(std::experimental::source_location const &loc,
-           IContract const &super, conditions... conds);
+           super_init_list super, conditions... conds);
+
   Contract(std::experimental::source_location const &loc, conditions... conds);
+
   ~Contract() noexcept(false);
   std::experimental::source_location const &location;
 };
@@ -27,13 +30,13 @@ Contract(std::experimental::source_location const &, conditions...)
     -> Contract<false, conditions...>;
 
 template <t_condition... conditions>
-Contract(std::experimental::source_location const &, IContract const &,
+Contract(std::experimental::source_location const &, super_init_list,
          conditions...) -> Contract<true, conditions...>;
 
 /*************IMPLEMENTATION*************/
 template <bool has_super_contract, t_condition... conditions>
 Contract<has_super_contract, conditions...>::Contract(
-    std::experimental::source_location const &loc, IContract const &super,
+    std::experimental::source_location const &loc, super_init_list super,
     conditions... conds)
     : Base(super, conds...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
