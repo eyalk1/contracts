@@ -41,10 +41,9 @@ TEST(HelloTest, BasicAssertions) {
     //     maybe, "pre falser"));
     auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super", precondition));
     try {
-      auto c2 = Contract(std::experimental::source_location::current(),
-                         pre<std::logic_error>(maybe, "maybe", precondition,
+      auto c2 = CONTRACT(pre<std::logic_error>(maybe, "maybe", precondition,
                                                defExcGen));
-      //   TCONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
+      //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";
     } catch (const std::runtime_error &e) {

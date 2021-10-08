@@ -15,8 +15,6 @@ concept descGen = requires(F f) {
   std::is_invocable_v<F, std::experimental::source_location const &,
                       std::string_view>;
   std::is_same_v<std::string, decltype(f)>;
-  //  std::result_of_t<F, std::experimental::source_location const &,
-  //                   std::string_view>>;
 };
 
 namespace Contract_ns::Throwing {
@@ -42,14 +40,6 @@ template <exception Exc, argumentless_function F, descGen DG> struct Condition {
   bool filter(auto filt) const { return filt & m_type; };
 };
 
-// template <exception Exc, argumentless_function F, descGen DG>
-// Condition(F, std::string_view, cond_type, DG)
-//     -> Condition<Exc, F, DG>;
-
-// template <exception Exc, argumentless_function F>
-// Condition(F, std::string_view, cond_type)
-//     -> Condition<Exc, F, decltype(defExcGen)>;
-
 template <exception Exc, argumentless_function F, descGen DG>
 constexpr Condition<Exc, F, DG>::Condition(F _pred,
                                            std::string_view _description,
@@ -71,30 +61,6 @@ Exc Condition<Exc, F, DG>::getException(
 };
 
 /*****************UTILITIES*****************/
-
-template <exception E>
-auto condition_generator = [](cond_type type) {
-  return [type](argumentless_function auto check_condition,
-                std::string_view description) {
-    return Condition<E, decltype(check_condition), decltype(defExcGen)>(
-        check_condition, description, type, defExcGen);
-  };
-};
-
-// template <exception E>
-// auto condition_generator_2 = [](cond_type type) {
-//   return [type](argumentless_function auto check_condition,
-//                 std::string_view description, typename auto DG) {
-//     return Condition<E, decltype(check_condition), decltype(DG)>(
-//         check_condition, description, type, DG);
-//   };
-// };
-
-// template <exception E> auto pre = condition_generator<E>(precondition);
-
-template <exception E> auto post = condition_generator<E>(postcondition);
-
-template <exception E> auto invar = condition_generator<E>(invariant);
 
 template <typename T>
 concept t_condition = is_same_template<

@@ -6,7 +6,7 @@
 
 namespace Contract_ns::Throwing {
 
-#define TCONTRACT(...)                                                         \
+#define CONTRACT(...)                                                         \
   Contract(std::experimental::source_location::current(), __VA_ARGS__)
 
 
