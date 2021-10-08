@@ -17,31 +17,15 @@
 
 auto maybe = [] { return !bool(rand() % 100); };
 
-template <exception E>
-auto pre1 = [](argumentless_function auto f, std::string_view sv,
-              Contract_ns::cond_type type) {
-  return Condition<std::logic_error, decltype(f), decltype(&defExcGen)>(f, sv,
-                                                                       type, &defExcGen);
-};
-
-template <exception E>
-auto pre2 = [](argumentless_function auto f, std::string_view sv,
-              Contract_ns::cond_type type, descGen auto dg) {
-  return Condition<std::logic_error, decltype(f), decltype(dg)>(f, sv, type,
-                                                                dg);
-};
-
-template<exception E>
-overload pre{pre1<E>, pre2<E>};
 
 TEST(HelloTest, BasicAssertions) {
 
   try {
     // auto c = DryContract(post<std::logic_error>(
     //     maybe, "pre falser"));
-    auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super", precondition));
+    auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
     try {
-      auto c2 = CONTRACT(pre<std::logic_error>(maybe, "maybe", precondition,
+      auto c2 = CONTRACT(pre<std::logic_error>(maybe, "maybe",
                                                defExcGen));
       //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
     } catch (const std::logic_error &e) {
