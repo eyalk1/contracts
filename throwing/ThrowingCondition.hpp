@@ -37,7 +37,7 @@ template <exception Exc, argumentless_function F, descGen DG> struct Condition {
     return filter(filt) && !check_condition();
   };
 
-  bool filter(auto filt) const { return filt & m_type; };
+  bool filter(auto filt) const noexcept { return filt & m_type; };
 };
 
 template <exception Exc, argumentless_function F, descGen DG>

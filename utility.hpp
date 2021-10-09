@@ -8,11 +8,14 @@
 #include <utility>
 
 
+
 auto empty = [] {};
 
 auto truer = [] { return true;};
 
 auto falser = [] {return false;};
+
+/****************CONCEPTS****************/
 
 template<typename T>
 concept exception = std::is_base_of_v<std::exception, T>;
@@ -23,6 +26,10 @@ concept argumentless_function =
     std::invocable<T>;
     std::is_same_v<bool, decltype(t)>;
   };
+
+template<typename T>
+concept enum_t = std::is_enum_v<T>;
+/****************IS_SAME_TEMPLATE****************/
 
 template<typename...>
 constexpr bool is_same_template{false};
@@ -35,12 +42,16 @@ constexpr bool is_same_template<
   T<A...>,
   T<B...>>{true};
 
+/****************MANUAL ERROR DEFAULT****************/
+
 using myError_t = std::pair<int, std::string>;
 
 auto runtime_builder = [](std::experimental::source_location context,
                           std::string_view description, int EC) -> myError_t {
   return {EC, fmt::format("{} {}", description, context.function_name())};
 };
+
+/****************CONTAIN IF****************/
 
 template<bool does_contain, typename T>
 struct contain_if;
@@ -56,22 +67,96 @@ template<typename T>
 struct contain_if<false, T>{
 };
 
+/****************OVERLOAD****************/
+
 template<class... Ts> struct overload : Ts... {using Ts::operator()...;};
 template<class... Ts> overload(Ts...) -> overload<Ts...>;
 
-
-template<typename Enum>
+/****************Enum Bitmask****************/
+template<enum_t Enum>
 constexpr bool EnableBitMaskOperators = false;
 
-template<typename Enum>
+template<enum_t Enum>
   requires EnableBitMaskOperators<Enum>
 constexpr Enum operator |(Enum lhs, Enum rhs)
 {
-    using underlying = typename std::underlying_type<Enum>::type;
+    using underlying = typename std::underlying_type_t<Enum>;
     return static_cast<Enum> (
         static_cast<underlying>(lhs) |
         static_cast<underlying>(rhs)
     );
 }
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+constexpr Enum operator &(Enum lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    return static_cast<Enum> (
+        static_cast<underlying>(lhs) &
+        static_cast<underlying>(rhs)
+    );
+}
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+constexpr Enum operator ^(Enum lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    return static_cast<Enum> (
+        static_cast<underlying>(lhs) ^
+        static_cast<underlying>(rhs)
+    );
+}
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+constexpr Enum operator ~(Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    return static_cast<Enum> (
+        ~static_cast<underlying>(rhs)
+    );
+}
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+Enum& operator |=(Enum &lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    lhs = static_cast<Enum> (
+        static_cast<underlying>(lhs) |
+        static_cast<underlying>(rhs)
+    );
+
+    return lhs;
+}
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+Enum& operator &=(Enum &lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    lhs = static_cast<Enum> (
+        static_cast<underlying>(lhs) &
+        static_cast<underlying>(rhs)
+    );
+
+    return lhs;
+}
+
+template<enum_t Enum>
+  requires EnableBitMaskOperators<Enum>
+Enum& operator ^=(Enum &lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type_t<Enum>;
+    lhs = static_cast<Enum> (
+        static_cast<underlying>(lhs) ^
+        static_cast<underlying>(rhs)
+    );
+
+    return lhs;
+}
+
 
 #endif //UTILITY
