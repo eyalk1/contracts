@@ -5,11 +5,10 @@
 
 #include "../utility.hpp"
 
-
 namespace Contract_ns::Throwing {
 
 template <exception E>
-auto cond_gen_default = [](int type) {
+constexpr auto cond_gen_default = [](cond_type type) {
   return [type](argumentless_function auto check_condition,
                 std::string_view description) {
     return Condition<E, decltype(check_condition), decltype(&defExcGen)>(
@@ -18,7 +17,7 @@ auto cond_gen_default = [](int type) {
 };
 
 template <exception E>
-auto cond_gen = [](int type) {
+constexpr auto cond_gen = [](cond_type type) {
   return [type](argumentless_function auto check_condition,
                 std::string_view description, descGen auto DG) {
     return Condition<E, decltype(check_condition), decltype(DG)>(
@@ -27,33 +26,17 @@ auto cond_gen = [](int type) {
 };
 
 template <exception E>
-auto pre1 = cond_gen_default<E>(precondition | invariant);
+constexpr overload pre{cond_gen_default<E>(precondition | invariant),
+                       cond_gen<E>(precondition | invariant)};
 
 template <exception E>
-auto pre2 = cond_gen<E>(precondition | invariant);
+constexpr overload post{cond_gen_default<E>(postcondition | invariant),
+                        cond_gen<E>(postcondition | invariant)};
 
 template <exception E>
-auto post1 = cond_gen_default<E>(invariant | postcondition);
-
-template <exception E>
-auto post2 = cond_gen<E>(invariant | postcondition);
-
-template <exception E>
-auto invar1 = cond_gen_default<E>(invariant);
-
-template <exception E>
-auto invar2 = cond_gen<E>(invariant);
-
-
-template<exception E>
-overload pre{pre1<E>, pre2<E>};
-
-template<exception E>
-overload post{post1<E>, pre2<E>};
-
-template<exception E>
-overload invar{invar1<E>, invar2<E>};
+constexpr overload invar{cond_gen_default<E>(invariant),
+                         cond_gen<E>(invariant)};
 
 } // namespace Contract_ns::Throwing
 
-#endif //PRE_POST_INVAR__HPP
+#endif // PRE_POST_INVAR__HPP

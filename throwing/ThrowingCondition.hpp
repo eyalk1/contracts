@@ -24,14 +24,14 @@ std::string defExcGen(std::experimental::source_location const &loc,
                       std::string_view description);
 
 template <exception Exc, argumentless_function F, descGen DG> struct Condition {
-  constexpr Condition(F _pred, std::string_view _description, int _type,
+  constexpr Condition(F _pred, std::string_view _description, cond_type _type,
                       DG dg);
-  constexpr Condition(F _pred, std::string_view _description, int _type);
+  constexpr Condition(F _pred, std::string_view _description, cond_type _type);
   Exc getException(std::experimental::source_location const &loc) const;
   F const check_condition;
   std::string_view const description;
-  int const m_type;
-  DG generateExceptionDescription;
+  cond_type const m_type;
+  DG const generateExceptionDescription;
 
   bool is_violated(auto filt) const {
     return filter(filt) && !check_condition();
@@ -43,14 +43,14 @@ template <exception Exc, argumentless_function F, descGen DG> struct Condition {
 template <exception Exc, argumentless_function F, descGen DG>
 constexpr Condition<Exc, F, DG>::Condition(F _pred,
                                            std::string_view _description,
-                                           int _type, DG dg)
+                                           cond_type _type, DG dg)
     : check_condition(_pred), description(_description), m_type(_type),
       generateExceptionDescription(dg) {}
 
 template <exception Exc, argumentless_function F, descGen DG>
 constexpr Condition<Exc, F, DG>::Condition(F _pred,
                                            std::string_view _description,
-                                           int _type)
+                                           cond_type _type)
     : check_condition(_pred), description(_description), m_type(_type),
       generateExceptionDescription(defExcGen) {}
 

@@ -47,7 +47,7 @@ protected:
    * @param filt bitwise type filter.
    */
   void check_conditions(
-      int filt, std::experimental::source_location const &location) const final;
+      cond_type filt, std::experimental::source_location const &location) const final;
 
 
 private:
@@ -73,7 +73,7 @@ DryContract<has_super_contract, conditions...>::~DryContract() noexcept(false) {
 
 template <bool has_super_contract, t_condition... conditions>
 void DryContract<has_super_contract, conditions...>::check_conditions(
-    int filt, std::experimental::source_location const &location) const {
+    cond_type filt, std::experimental::source_location const &location) const {
   // if we are already in an exception, we don't need to add another error on top of it.
   if(std::uncaught_exceptions())
     return;

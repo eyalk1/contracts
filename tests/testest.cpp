@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <type_traits>
 
+// TODO: add static assertions for simple error messages all over.
+
 // using namespace Contract_ns::Manual;
 
 auto maybe = [] { return !bool(rand() % 100); };
@@ -25,8 +27,8 @@ TEST(HelloTest, BasicAssertions) {
     //     maybe, "pre falser"));
     auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
     try {
-      auto c2 = CONTRACT(pre<std::logic_error>(maybe, "maybe",
-                                               defExcGen));
+      auto c2 = CONTRACT({c1},
+        pre<std::logic_error>(maybe, "maybe", defExcGen));
       //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";

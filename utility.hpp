@@ -60,4 +60,18 @@ template<class... Ts> struct overload : Ts... {using Ts::operator()...;};
 template<class... Ts> overload(Ts...) -> overload<Ts...>;
 
 
+template<typename Enum>
+constexpr bool EnableBitMaskOperators = false;
+
+template<typename Enum>
+  requires EnableBitMaskOperators<Enum>
+constexpr Enum operator |(Enum lhs, Enum rhs)
+{
+    using underlying = typename std::underlying_type<Enum>::type;
+    return static_cast<Enum> (
+        static_cast<underlying>(lhs) |
+        static_cast<underlying>(rhs)
+    );
+}
+
 #endif //UTILITY
