@@ -4,53 +4,61 @@
 #include "DryContract.hpp"
 #include "ThrowingCondition.hpp"
 
+#include <concepts>
+
 namespace Contract_ns::Throwing {
 
-#define CONTRACT(...)                                                         \
+#define CONTRACT(...)                                                          \
   Contract(std::experimental::source_location::current(), __VA_ARGS__)
 
+template <std::integral auto num_of_supers,
+          t_condition... conditions>
+struct Contract
+    : public DryContract<num_of_supers, conditions...> {
+  using Base = DryContract<num_of_supers, conditions...>;
 
-template <bool has_super_contract, t_condition... conditions>
-struct Contract : public DryContract<has_super_contract, conditions...> {
-  using Base = DryContract<has_super_contract, conditions...>;
+  Contract(std::experimental::source_location loc,
+           super_list_t<num_of_supers> super, conditions... conds);
 
-  Contract(std::experimental::source_location const &loc,
-           super_init_list super, conditions... conds);
+  Contract(std::experimental::source_location loc, conditions... conds);
 
-  Contract(std::experimental::source_location const &loc, conditions... conds);
-
-  ~Contract() noexcept(false);
-  std::experimental::source_location const &location;
+  virtual ~Contract() noexcept(false);
+  std::experimental::source_location location;
 };
 
 /*************Class Template Deduction Guides*************/
 
 template <t_condition... conditions>
-Contract(std::experimental::source_location const &, conditions...)
-    -> Contract<false, conditions...>;
+Contract(std::experimental::source_location, conditions...)
+    -> Contract<0, conditions...>;
 
-template <t_condition... conditions>
-Contract(std::experimental::source_location const &, super_init_list,
-         conditions...) -> Contract<true, conditions...>;
+template <std::integral auto num_of_supers, t_condition... conditions>
+Contract(std::experimental::source_location, super_list_t<num_of_supers>,
+         conditions...)
+    -> Contract<super_list_t<num_of_supers>::size, conditions...>;
 
 /*************IMPLEMENTATION*************/
-template <bool has_super_contract, t_condition... conditions>
-Contract<has_super_contract, conditions...>::Contract(
-    std::experimental::source_location const &loc, super_init_list super,
+template <std::integral auto num_of_supers,
+          t_condition... conditions>
+Contract<num_of_supers, conditions...>::Contract(
+    std::experimental::source_location loc, super_list_t<num_of_supers> super,
     conditions... conds)
     : Base(super, conds...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 
-template <bool has_super_contract, t_condition... conditions>
-Contract<has_super_contract, conditions...>::Contract(
-    std::experimental::source_location const &loc, conditions... conds)
+template <std::integral auto num_of_supers,
+          t_condition... conditions>
+Contract<num_of_supers, conditions...>::Contract(
+    std::experimental::source_location loc, conditions... conds)
     : Base(conds...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 
-template <bool has_super_contract, t_condition... conditions>
-Contract<has_super_contract, conditions...>::~Contract() noexcept(false) {
+template <std::integral auto num_of_supers,
+          t_condition... conditions>
+Contract<num_of_supers,
+         conditions...>::~Contract() noexcept(false) {
   Base::check_conditions(postcondition | invariant, location);
 }
 

@@ -10,15 +10,7 @@
 #include <type_traits>
 #include <utility>
 
-template <typename F>
-concept descGen = requires(F f) {
-  std::is_invocable_v<F, std::experimental::source_location const &,
-                      std::string_view>;
-  std::is_same_v<std::string, decltype(f)>;
-};
-
 namespace Contract_ns::Throwing {
-
 
 std::string defExcGen(std::experimental::source_location const &loc,
                       std::string_view description);
@@ -68,7 +60,7 @@ concept t_condition = is_same_template<
 
 std::string defExcGen(std::experimental::source_location const &loc,
                       std::string_view description) {
-  return fmt::format("{}: {}.\n{}: {}.\n{}: {}",
+  return fmt::format("{}: {}.\n{}: {}.\n{}: {}.",
                      "condition not met at the function", loc.function_name(),
                      "the error is", description, "line: ", loc.line());
 }

@@ -8,6 +8,7 @@
 
 #include <boost/hana/tuple.hpp>
 
+#include <array>
 #include <concepts>
 #include <iostream>
 #include <stdlib.h>
@@ -19,7 +20,6 @@
 
 auto maybe = [] { return !bool(rand() % 100); };
 
-
 TEST(HelloTest, BasicAssertions) {
 
   try {
@@ -27,8 +27,11 @@ TEST(HelloTest, BasicAssertions) {
     //     maybe, "pre falser"));
     auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
     try {
-      auto c2 = CONTRACT({c1},
-        pre<std::logic_error>(maybe, "maybe", defExcGen));
+      // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
+      // const>,1>({std::ref(c1)})
+      auto c2 = Contract(std::experimental::source_location::current(),
+                         Contract_ns::Throwing::super_list_t<1>({c1}),
+                         pre<std::logic_error>(maybe, "maybe", defExcGen));
       //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";

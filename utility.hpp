@@ -29,6 +29,14 @@ concept argumentless_function =
 
 template<typename T>
 concept enum_t = std::is_enum_v<T>;
+
+template <typename F>
+concept descGen = requires(F f) {
+  std::is_invocable_v<F, std::experimental::source_location const &,
+                      std::string_view>;
+  std::is_same_v<std::string, decltype(f)>;
+};
+
 /****************IS_SAME_TEMPLATE****************/
 
 template<typename...>
@@ -59,7 +67,6 @@ struct contain_if;
 template<typename T>
 struct contain_if<true, T>{
   T what;
-  // T& operator*() const { return what;};
   T const& operator*() const { return what;};
 };
 
@@ -67,7 +74,11 @@ template<typename T>
 struct contain_if<false, T>{
 };
 
-/****************OVERLOAD****************/
+/****************INT COMPARE COMPILE TIME******/
+
+constexpr bool isGt(int i, int j) { return i > j; };
+
+/****************OVERLOAD CLASS****************/
 
 template<class... Ts> struct overload : Ts... {using Ts::operator()...;};
 template<class... Ts> overload(Ts...) -> overload<Ts...>;

@@ -7,17 +7,19 @@
 #include <boost/hana.hpp>
 #include <experimental/source_location>
 #include <fmt/core.h>
+#include <functional>
 #include <sstream>
 #include <string>
-#include <functional>
 #include <vector>
 
 namespace Contract_ns::Throwing {
-using super_list = std::vector<std::reference_wrapper<IContract const>>;
-using super_init_list = std::initializer_list<std::reference_wrapper<IContract const>>;
+template <std::integral auto num_of_supers>
+using super_list_t =
+    std::array<std::reference_wrapper<IContract const>, num_of_supers>;
 
-template <bool has_super_contract = false, t_condition... conditions>
+template <std::integral auto num_of_supers = 0, t_condition... conditions>
 struct DryContract : public IContract {
+  using super_list = super_list_t<num_of_supers>;
   /**
    * @brief Construct a new Throwing DryContract object. go over the pre and
    * invariant conditions.
@@ -28,7 +30,7 @@ struct DryContract : public IContract {
    */
   DryContract(conditions... _conditions);
 
-  DryContract(super_init_list bases, conditions... _conditions);
+  DryContract(super_list bases, conditions... _conditions);
 
   /**
    * @brief Destroy the Throwing DryContract object. go over the post and
@@ -47,39 +49,45 @@ protected:
    * @param filt bitwise type filter.
    */
   void check_conditions(
-      cond_type filt, std::experimental::source_location const &location) const final;
-
+      cond_type filt,
+      std::experimental::source_location const &location) const final;
 
 private:
   boost::hana::tuple<conditions...> const m_conditions;
-  contain_if<has_super_contract, super_list> supers;
+  contain_if<isGt(num_of_supers, 0), super_list> supers;
 };
+
+template <typename sl, typename... conditions>
+DryContract(sl, conditions...) -> DryContract<sl::size, conditions...>;
+
+template <typename... conditions>
+DryContract(conditions...) -> DryContract<0, conditions...>;
 
 /*****************IMPLEMENTATION*****************/
 
-template <bool has_super_contract, t_condition... conditions>
-DryContract<has_super_contract, conditions...>::DryContract(
+template <std::integral auto num_of_supers, t_condition... conditions>
+DryContract<num_of_supers, conditions...>::DryContract(
     conditions... _conditions)
     : m_conditions(_conditions...) {}
 
-template <bool has_super_contract, t_condition... conditions>
-DryContract<has_super_contract, conditions...>::DryContract(
-    super_init_list base, conditions... _conditions)
+template <std::integral auto num_of_supers, t_condition... conditions>
+DryContract<num_of_supers, conditions...>::DryContract(
+    super_list base, conditions... _conditions)
     : m_conditions(_conditions...), supers{base} {}
 
-template <bool has_super_contract, t_condition... conditions>
-DryContract<has_super_contract, conditions...>::~DryContract() noexcept(false) {
-}
+template <std::integral auto num_of_supers, t_condition... conditions>
+DryContract<num_of_supers, conditions...>::~DryContract() noexcept(false) {}
 
-template <bool has_super_contract, t_condition... conditions>
-void DryContract<has_super_contract, conditions...>::check_conditions(
+template <std::integral auto num_of_supers, t_condition... conditions>
+void DryContract<num_of_supers, conditions...>::check_conditions(
     cond_type filt, std::experimental::source_location const &location) const {
-  // if we are already in an exception, we don't need to add another error on top of it.
-  if(std::uncaught_exceptions())
+  // if we are already in an exception, we don't need to add another error on
+  // top of it.
+  if (std::uncaught_exceptions())
     return;
 
-  if constexpr (has_super_contract)
-    for(auto const & super : *supers)
+  if constexpr (isGt(num_of_supers, 0))
+    for (auto const &super : *supers)
       super.get().check_conditions(filt, location);
 
   boost::hana::for_each(m_conditions, [&location, filt](auto const &condition) {
