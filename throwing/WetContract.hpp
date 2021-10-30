@@ -11,16 +11,19 @@ namespace Contract_ns::Throwing {
 #define CONTRACT(...)                                                          \
   Contract(std::experimental::source_location::current(), __VA_ARGS__)
 
-template <std::integral auto num_of_supers,
-          t_condition... conditions>
-struct Contract
-    : public DryContract<num_of_supers, conditions...> {
+template <std::integral auto num_of_supers, t_condition... conditions>
+struct Contract : public DryContract<num_of_supers, conditions...> {
   using Base = DryContract<num_of_supers, conditions...>;
 
-  Contract(std::experimental::source_location loc,
-           super_list_t<num_of_supers> super, conditions... conds);
+  Contract(std::experimental::source_location loc, Bases<num_of_supers> &&super,
+           conditions... conds);
 
   Contract(std::experimental::source_location loc, conditions... conds);
+
+  Contract(Contract const&) = delete;
+  Contract(Contract &&) = delete;
+  auto operator=(Contract const&) = delete;
+  auto operator=(Contract &&) = delete;
 
   virtual ~Contract() noexcept(false);
   std::experimental::source_location location;
@@ -33,32 +36,28 @@ Contract(std::experimental::source_location, conditions...)
     -> Contract<0, conditions...>;
 
 template <std::integral auto num_of_supers, t_condition... conditions>
-Contract(std::experimental::source_location, super_list_t<num_of_supers>,
-         conditions...)
-    -> Contract<super_list_t<num_of_supers>::size, conditions...>;
+Contract(std::experimental::source_location, Bases<num_of_supers> &&,
+         conditions...) -> Contract<num_of_supers, conditions...>;
 
 /*************IMPLEMENTATION*************/
-template <std::integral auto num_of_supers,
-          t_condition... conditions>
+
+template <std::integral auto num_of_supers, t_condition... conditions>
 Contract<num_of_supers, conditions...>::Contract(
-    std::experimental::source_location loc, super_list_t<num_of_supers> super,
+    std::experimental::source_location loc, Bases<num_of_supers> && super,
     conditions... conds)
-    : Base(super, conds...), location(loc) {
+    : Base(std::move(super), conds...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 
-template <std::integral auto num_of_supers,
-          t_condition... conditions>
+template <std::integral auto num_of_supers, t_condition... conditions>
 Contract<num_of_supers, conditions...>::Contract(
     std::experimental::source_location loc, conditions... conds)
     : Base(conds...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 
-template <std::integral auto num_of_supers,
-          t_condition... conditions>
-Contract<num_of_supers,
-         conditions...>::~Contract() noexcept(false) {
+template <std::integral auto num_of_supers, t_condition... conditions>
+Contract<num_of_supers, conditions...>::~Contract() noexcept(false) {
   Base::check_conditions(postcondition | invariant, location);
 }
 

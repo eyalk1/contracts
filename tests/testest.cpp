@@ -3,6 +3,7 @@
 #include "../CommonCondition.hpp"
 // #include "../Manual.hpp"
 #include "../Throwing.hpp"
+#include "../throwing/IContract.hpp"
 
 #include "../utility.hpp"
 
@@ -15,10 +16,13 @@
 #include <type_traits>
 
 // TODO: add static assertions for simple error messages all over.
+// TODO: delete move and copy constructors
 
 // using namespace Contract_ns::Manual;
+using namespace Contract_ns::Throwing;
 
 auto maybe = [] { return !bool(rand() % 100); };
+
 
 TEST(HelloTest, BasicAssertions) {
 
@@ -29,9 +33,10 @@ TEST(HelloTest, BasicAssertions) {
     try {
       // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
       // const>,1>({std::ref(c1)})
-      auto c2 = Contract(std::experimental::source_location::current(),
-                         Contract_ns::Throwing::super_list_t<1>({c1}),
-                         pre<std::logic_error>(maybe, "maybe", defExcGen));
+      Bases b1(c1);
+      // auto c2 = Contract(std::experimental::source_location::current(),
+      //                    Bases(c1),
+      //                    pre<std::logic_error>(maybe, "maybe", defExcGen));
       //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";

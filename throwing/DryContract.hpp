@@ -4,6 +4,8 @@
 #include "IContract.hpp"
 #include "ThrowingCondition.hpp"
 
+#include "Bases.hpp"
+
 #include <boost/hana.hpp>
 #include <experimental/source_location>
 #include <fmt/core.h>
@@ -30,7 +32,7 @@ struct DryContract : public IContract {
    */
   DryContract(conditions... _conditions);
 
-  DryContract(super_list bases, conditions... _conditions);
+  DryContract(Bases<num_of_supers> &&Bases, conditions... _conditions);
 
   /**
    * @brief Destroy the Throwing DryContract object. go over the post and
@@ -38,7 +40,10 @@ struct DryContract : public IContract {
    */
   ~DryContract() noexcept(false);
 
-  // auto const &getConditions() { return m_conditions; };
+  DryContract(DryContract const&) = delete;
+  DryContract(DryContract &&) = delete;
+  auto operator=(DryContract const&) = delete;
+  auto operator=(DryContract &&) = delete;
 
 protected:
   /**
@@ -57,10 +62,10 @@ private:
   contain_if<isGt(num_of_supers, 0), super_list> supers;
 };
 
-template <typename sl, typename... conditions>
-DryContract(sl, conditions...) -> DryContract<sl::size, conditions...>;
+template <base_t sl, t_condition... conditions>
+DryContract(sl &&, conditions...) -> DryContract<sl::size, conditions...>;
 
-template <typename... conditions>
+template <t_condition... conditions>
 DryContract(conditions...) -> DryContract<0, conditions...>;
 
 /*****************IMPLEMENTATION*****************/
@@ -72,8 +77,8 @@ DryContract<num_of_supers, conditions...>::DryContract(
 
 template <std::integral auto num_of_supers, t_condition... conditions>
 DryContract<num_of_supers, conditions...>::DryContract(
-    super_list base, conditions... _conditions)
-    : m_conditions(_conditions...), supers{base} {}
+    Bases<num_of_supers> &&base, conditions... _conditions)
+    : m_conditions(_conditions...), supers{std::move(base.b)} {}
 
 template <std::integral auto num_of_supers, t_condition... conditions>
 DryContract<num_of_supers, conditions...>::~DryContract() noexcept(false) {}
