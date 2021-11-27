@@ -20,7 +20,7 @@ template <std::integral auto num_of_supers> struct Bases {
 };
 
 template <typename... things>
-Bases(things... thing) -> Bases<sizeof...(things)>;
+Bases(things const &... thing) -> Bases<sizeof...(things)>;
 
 template <typename T>
 concept base_t = is_same_template<T, Bases<0>>;
