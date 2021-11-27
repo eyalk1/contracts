@@ -2,7 +2,7 @@
 #define THROWING_CONTRACT__HPP
 
 #include "IContract.hpp"
-#include "ThrowingCondition.hpp"
+#include "Condition.hpp"
 
 #include "Bases.hpp"
 

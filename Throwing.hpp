@@ -3,7 +3,7 @@
 
 #include "CommonCondition.hpp"
 #include "throwing/DryContract.hpp"
-#include "throwing/ThrowingCondition.hpp"
+#include "throwing/Condition.hpp"
 #include "throwing/pre_post_invar.hpp"
 #include "throwing/WetContract.hpp"
 

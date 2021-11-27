@@ -23,21 +23,18 @@ using namespace Contract_ns::Throwing;
 
 auto maybe = [] { return !bool(rand() % 100); };
 
-
 TEST(HelloTest, BasicAssertions) {
 
   try {
-    // auto c = DryContract(post<std::logic_error>(
-    //     maybe, "pre falser"));
-    auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
+    auto c = DryContract(post<std::logic_error>(maybe, "pre falser"));
+    // auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
     try {
-      // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
-      // const>,1>({std::ref(c1)})
-      Bases b1(c1);
-      // auto c2 = Contract(std::experimental::source_location::current(),
-      //                    Bases(c1),
-      //                    pre<std::logic_error>(maybe, "maybe", defExcGen));
-      //   CONTRACT({c, c1}, post<std::runtime_error>(truer, "pre truer"));
+    //   // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
+    //   // const>,1>({std::ref(c1)})
+      // Bases b1(c);
+      auto c2 =
+          Contract(std::experimental::source_location::current(), Bases(c),
+                   pre<std::logic_error>(maybe, "maybe", defExcGen));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";
     } catch (const std::runtime_error &e) {

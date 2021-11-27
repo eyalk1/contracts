@@ -2,7 +2,7 @@
 #define WET_CONTRACT__HPP
 
 #include "DryContract.hpp"
-#include "ThrowingCondition.hpp"
+#include "Condition.hpp"
 
 #include <concepts>
 

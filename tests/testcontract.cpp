@@ -1,6 +1,6 @@
 #include "include/ManualCondition.hpp"
 #include "include/ManualContract.hpp"
-#include "include/ThrowingCondition.hpp"
+#include "include/Condition.hpp"
 #include "include/ThrowingContract.hpp"
 #include "include/CommonCondition.hpp"
 

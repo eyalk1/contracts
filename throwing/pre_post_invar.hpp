@@ -1,7 +1,7 @@
 #ifndef PRE_POST_INVAR__HPP
 #define PRE_POST_INVAR__HPP
 
-#include "ThrowingCondition.hpp"
+#include "Condition.hpp"
 
 #include "../utility.hpp"
 
