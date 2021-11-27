@@ -11,6 +11,11 @@ template <std::integral auto num_of_supers> struct Bases {
   Bases(things const &...thing)
       : b{std::reference_wrapper<IContract const>(thing)...} {};
 
+  Bases(Bases const& ) = delete;
+  Bases(Bases && ) = delete;
+  Bases operator=(Bases const&) = delete;
+  Bases operator=(Bases &&) = delete;
+
   using arr_t =
       std::array<std::reference_wrapper<IContract const>, num_of_supers>;
 

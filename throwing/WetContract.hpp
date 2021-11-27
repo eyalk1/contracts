@@ -16,9 +16,9 @@ struct Contract : public DryContract<num_of_supers, conditions...> {
   using Base = DryContract<num_of_supers, conditions...>;
 
   Contract(std::experimental::source_location loc, Bases<num_of_supers> &&super,
-           conditions... conds);
+           conditions&&... conds);
 
-  Contract(std::experimental::source_location loc, conditions... conds);
+  Contract(std::experimental::source_location loc, conditions&&... conds);
 
   Contract(Contract const&) = delete;
   Contract(Contract &&) = delete;
@@ -44,15 +44,15 @@ Contract(std::experimental::source_location, Bases<num_of_supers> &&,
 template <std::integral auto num_of_supers, t_condition... conditions>
 Contract<num_of_supers, conditions...>::Contract(
     std::experimental::source_location loc, Bases<num_of_supers> && super,
-    conditions... conds)
-    : Base(std::move(super), conds...), location(loc) {
+    conditions&&... conds)
+    : Base(std::move(super), std::move(conds)...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 
 template <std::integral auto num_of_supers, t_condition... conditions>
 Contract<num_of_supers, conditions...>::Contract(
-    std::experimental::source_location loc, conditions... conds)
-    : Base(conds...), location(loc) {
+    std::experimental::source_location loc, conditions&&... conds)
+    : Base(std::move(conds)...), location(loc) {
   Base::check_conditions(precondition | invariant, location);
 }
 

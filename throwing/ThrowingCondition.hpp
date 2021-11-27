@@ -19,6 +19,13 @@ template <exception Exc, argumentless_function F, descGen DG> struct Condition {
   constexpr Condition(F _pred, std::string_view _description, cond_type _type,
                       DG dg);
   constexpr Condition(F _pred, std::string_view _description, cond_type _type);
+
+  // copy is deleted
+  template<exception Exc2, argumentless_function F2, descGen DG2>
+  constexpr Condition(Condition<Exc2, F2, DG2> const & other) = delete;
+  template<exception Exc2, argumentless_function F2, descGen DG2>
+  constexpr Condition operator=(Condition<Exc2, F2, DG2> const & other) = delete;
+
   Exc getException(std::experimental::source_location const &loc) const;
   F const check_condition;
   std::string_view const description;
