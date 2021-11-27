@@ -13,21 +13,20 @@
 #include <concepts>
 #include <iostream>
 #include <stdlib.h>
+#include <time.h>
 #include <type_traits>
 
 // TODO: add static assertions for simple error messages all over.
-// TODO: delete move and copy constructors
+// TODO: add MakeWet and MakeDry overloads in Dry contract - they bake in themselves as bases.
 
 // using namespace Contract_ns::Manual;
 using namespace Contract_ns::Throwing;
 
-auto maybe = [] { return !bool(rand() % 100); };
+auto maybe = [] { return !bool(rand() % 2); };
 
 TEST(HelloTest, BasicAssertions) {
-
-  try {
-    auto c = DryContract(post<std::logic_error>(maybe, "pre falser"));
-    // auto c1 = DryContract(pre<std::logic_error>(maybe, "pre super"));
+  srand(time(NULL));
+  for (int i = 0; i < 100; i++) {
     try {
     //   // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
     //   // const>,1>({std::ref(c1)})
@@ -43,13 +42,4 @@ TEST(HelloTest, BasicAssertions) {
   } catch (const std::exception &e) {
     std::cerr << e.what() << "\nthis is fucking shit\n";
   }
-  // child a;
-  // auto c = Contract(runtime_builder,
-  //                   pre(falser, "pre falser", 80),
-  //                   Condition(falser, "falser pre", 69, precondition));
-  // if(auto error = c.check(precondition); error.has_value())
-  // {
-  //   std::cout << error.value().second << '\n';
-  //   std::cout << error.value().first << '\n';
-  // }
 }
