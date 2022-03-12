@@ -17,29 +17,30 @@
 #include <type_traits>
 
 // TODO: add static assertions for simple error messages all over.
-// TODO: add MakeWet and MakeDry overloads in Dry contract - they bake in themselves as bases.
+// TODO: add MakeWet and MakeDry overloads in Dry contract - they bake in
+// themselves as bases.
 
 // using namespace Contract_ns::Manual;
 using namespace Contract_ns::Throwing;
 
 auto maybe = [] { return !bool(rand() % 2); };
+auto surely = [] {return true;};
+auto surely_not =[] { return false;};
 
 TEST(HelloTest, BasicAssertions) {
   srand(time(NULL));
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1; i++) {
     try {
-    //   // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
-    //   // const>,1>({std::ref(c1)})
+      //   // std::array<std::reference_wrapper<Contract_ns::Throwing::IContract
+      //   // const>,1>({std::ref(c1)})
       // Bases b1(c);
-      auto c2 =
-          Contract(std::experimental::source_location::current(), Bases(c),
-                   pre<std::logic_error>(maybe, "maybe", defExcGen));
+      auto c2 = DryContract(pre<std::logic_error>(surely, "maybe", defExcGen));
+      auto c3 = c2.MakeDry(pre<std::runtime_error>(surely_not, "definetly"));
     } catch (const std::logic_error &e) {
       std::cerr << e.what() << "\nhello\n";
     } catch (const std::runtime_error &e) {
       std::cerr << e.what() << "\nbye bye\n";
     }
-  } catch (const std::exception &e) {
-    std::cerr << e.what() << "\nthis is fucking shit\n";
   }
+
 }

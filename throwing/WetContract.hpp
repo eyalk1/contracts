@@ -1,10 +1,12 @@
 #ifndef WET_CONTRACT__HPP
 #define WET_CONTRACT__HPP
+// module Wet
 
 #include "DryContract.hpp"
 #include "Condition.hpp"
 
 #include <concepts>
+
 
 namespace Contract_ns::Throwing {
 
@@ -25,7 +27,7 @@ struct Contract : public DryContract<num_of_supers, conditions...> {
   auto operator=(Contract const&) = delete;
   auto operator=(Contract &&) = delete;
 
-  virtual ~Contract() noexcept(false);
+  ~Contract() noexcept(false) override;
   std::experimental::source_location location;
 };
 
